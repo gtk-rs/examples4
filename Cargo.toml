@@ -68,6 +68,9 @@ name = "cairo_threads"
 name = "cairotest"
 
 [[bin]]
+name = "clipboard_simple"
+
+[[bin]]
 name = "clock"
 
 [[bin]]
