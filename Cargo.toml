@@ -59,6 +59,9 @@ name = "builder_basics"
 name = "builder_signal"
 
 [[bin]]
+name = "builders"
+
+[[bin]]
 name = "cairo_threads"
 
 [[bin]]
