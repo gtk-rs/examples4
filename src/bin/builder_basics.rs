@@ -28,7 +28,7 @@ fn build_ui(application: &gtk::Application) {
         dialog.hide();
     });
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {

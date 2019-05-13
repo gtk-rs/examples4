@@ -4,6 +4,7 @@
 //! a periodic task, implementing a clock in this example.
 
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 extern crate chrono;
 
@@ -21,28 +22,31 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("First GTK+ Clock");
-    window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(260, 40);
 
     let time = current_time();
     let label = gtk::Label::new(None);
     label.set_text(&time);
+    label.set_margin_top(10);
+    label.set_margin_bottom(10);
+    label.set_margin_start(10);
+    label.set_margin_end(10);
 
     window.add(&label);
 
-    window.show_all();
+    window.show();
 
     // we are using a closure to capture the label (else we could also use a normal function)
     let tick = move || {
         let time = current_time();
         label.set_text(&time);
         // we could return gtk::Continue(false) to stop our clock after this tick
-        gtk::Continue(true)
+        glib::Continue(true)
     };
 
     // executes the closure once every second
-    gtk::timeout_add_seconds(1, tick);
+    glib::timeout_add_seconds_local(1, tick);
 }
 
 fn main() {
