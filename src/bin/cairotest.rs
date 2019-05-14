@@ -12,7 +12,7 @@ use gtk::DrawingArea;
 use cairo::{Context, FontSlant, FontWeight};
 
 fn build_ui(application: &gtk::Application) {
-    drawable(application, 500, 500, |_, cr| {
+    drawable(application, 500, 500, |_, cr, _, _| {
         cr.set_dash(&[3., 2., 1.], 1.);
         assert_eq!(cr.get_dash(), (vec![3., 2., 1.], 1.));
 
@@ -58,11 +58,9 @@ fn build_ui(application: &gtk::Application) {
 
         cr.arc(0.5 + eye_dx, eye_y, 0.05, 0.0, PI * 2.);
         cr.fill();
-
-        Inhibit(false)
     });
 
-    drawable(application, 500, 500, |_, cr| {
+    drawable(application, 500, 500, |_, cr, _, _| {
         cr.scale(500f64, 500f64);
 
         cr.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
@@ -83,8 +81,6 @@ fn build_ui(application: &gtk::Application) {
         cr.arc(0.04, 0.53, 0.02, 0.0, PI * 2.);
         cr.arc(0.27, 0.65, 0.02, 0.0, PI * 2.);
         cr.fill();
-
-        Inhibit(false)
     });
 }
 
@@ -101,14 +97,14 @@ fn main() {
 }
 
 pub fn drawable<F>(application: &gtk::Application, width: i32, height: i32, draw_fn: F)
-where F: Fn(&DrawingArea, &Context) -> Inhibit + 'static {
+where F: Fn(&DrawingArea, &Context, i32, i32) + 'static {
     let window = gtk::ApplicationWindow::new(application);
     let drawing_area = Box::new(DrawingArea::new)();
 
-    drawing_area.connect_draw(draw_fn);
+    drawing_area.set_draw_func(Some(Box::new(draw_fn)));
 
     window.set_default_size(width, height);
 
     window.add(&drawing_area);
-    window.show_all();
+    window.show();
 }
