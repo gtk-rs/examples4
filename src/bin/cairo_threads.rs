@@ -13,6 +13,7 @@ use std::time::Duration;
 use cairo::prelude::*;
 use cairo::{Context, Format, ImageSurface};
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::{ApplicationWindow, DrawingArea};
 
@@ -205,7 +206,7 @@ fn build_ui(application: &gtk::Application) {
 
     // Whenever the drawing area has to be redrawn, render the latest images in the correct
     // locations
-    area.connect_draw(clone!(workspace => move |_, cr| {
+    area.set_draw_func(Some(Box::new(clone!(workspace => move |_, cr, _, _| {
         let (ref images, ref origins, _) = *workspace;
 
         for (image, origin) in images.iter().zip(origins.iter()) {
@@ -213,12 +214,10 @@ fn build_ui(application: &gtk::Application) {
                 draw_image_if_dirty(&cr, surface, *origin, (WIDTH, HEIGHT));
             });
         }
-
-        Inhibit(false)
-    }));
+    }))));
 
     ready_rx.attach(None, move |(thread_num, image)| {
-        let (ref images, ref origins, ref workers) = *workspace;
+        let (ref images, _, ref workers) = *workspace;
 
         // Swap the newly received image with the old stored one and send the old one back to
         // the worker thread
@@ -226,12 +225,12 @@ fn build_ui(application: &gtk::Application) {
         let image = images[thread_num].replace(image);
         let _ = tx.send(image);
 
-        area.queue_draw_area(origins[thread_num].0, origins[thread_num].1, WIDTH, HEIGHT);
+        area.queue_draw();
 
         Continue(true)
     });
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
