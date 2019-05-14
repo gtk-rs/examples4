@@ -47,7 +47,7 @@ fn build_ui(application: &gtk::Application) {
         label.set_text(&value.to_string());
     });
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
