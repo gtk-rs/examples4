@@ -65,9 +65,6 @@ name = "cairo_threads"
 name = "cairotest"
 
 [[bin]]
-name = "child-properties"
-
-[[bin]]
 name = "clock"
 
 [[bin]]
