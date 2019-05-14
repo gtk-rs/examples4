@@ -3,6 +3,7 @@
 //! A simple text file viewer
 
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use std::env::args;
@@ -11,6 +12,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::Builder;
 
@@ -46,7 +48,7 @@ pub fn build_ui(application: &gtk::Application) {
 
         // TODO move this to a impl?
         let file_chooser = gtk::FileChooserDialog::new(
-            Some("Open File"), Some(&window), gtk::FileChooserAction::Open);
+            Some("Open File"), Some(&window), gtk::FileChooserAction::Open, &[]);
         file_chooser.add_buttons(&[
             ("Open", gtk::ResponseType::Ok),
             ("Cancel", gtk::ResponseType::Cancel),
@@ -65,7 +67,7 @@ pub fn build_ui(application: &gtk::Application) {
         file_chooser.destroy();
     });
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
