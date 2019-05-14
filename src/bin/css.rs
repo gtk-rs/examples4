@@ -15,10 +15,7 @@ use std::env::args;
 // Basic CSS: we change background color, we set font color to black and we set it as bold.
 const STYLE: &str = "
 #entry1 {
-    background-image: -gtk-gradient (linear,
-                                     0 0, 1 0,
-                                     color-stop(0, #f00),
-                                     color-stop(1, #0f0));
+    background: linear-gradient(to right, #f00, #0f0);
     color: blue;
     font-weight: bold;
 }
@@ -55,11 +52,11 @@ fn build_ui(application: &gtk::Application) {
     let label = gtk::Button::new_with_label("hover me!");
     // We need to name it in order to be able to use its name as a CSS label to
     // apply CSS on it.
-    gtk::WidgetExt::set_name(&label, "label1");
+    gtk::WidgetExtManual::set_name(&label, "label1");
 
     let entry = gtk::Entry::new();
     // We need to name it in order to apply CSS on it.
-    gtk::WidgetExt::set_name(&entry, "entry1");
+    gtk::WidgetExtManual::set_name(&entry, "entry1");
     entry.set_text("Some text");
 
     let combo = gtk::ComboBoxText::new();
@@ -75,7 +72,7 @@ fn build_ui(application: &gtk::Application) {
     window.add(&vbox);
 
     application.connect_activate(move |_| {
-        window.show_all();
+        window.show();
     });
 }
 
@@ -87,13 +84,11 @@ fn main() {
     application.connect_startup(|app| {
         // The CSS "magic" happens here.
         let provider = gtk::CssProvider::new();
-        provider
-            .load_from_data(STYLE.as_bytes())
-            .expect("Failed to load CSS");
+        provider.load_from_data(STYLE.as_bytes());
         // We give the CssProvided to the default screen so the CSS rules we added
         // can be applied to our window.
-        gtk::StyleContext::add_provider_for_screen(
-            &gdk::Screen::get_default().expect("Error initializing gtk css provider."),
+        gtk::StyleContext::add_provider_for_display(
+            &gdk::Display::get_default().expect("Error initializing gtk css provider."),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
