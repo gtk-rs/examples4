@@ -13,7 +13,6 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("Multithreading GTK+ Program");
-    window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(600, 400);
 
@@ -21,6 +20,11 @@ fn build_ui(application: &gtk::Application) {
     let scroll = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
     scroll.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
     scroll.add(&text_view);
+
+    scroll.set_margin_top(10);
+    scroll.set_margin_bottom(10);
+    scroll.set_margin_start(10);
+    scroll.set_margin_end(10);
 
     let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -45,7 +49,7 @@ fn build_ui(application: &gtk::Application) {
     });
 
     window.add(&scroll);
-    window.show_all();
+    window.show();
 }
 
 fn main() {
