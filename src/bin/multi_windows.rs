@@ -3,6 +3,8 @@ extern crate gio;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
+use glib::signal::Inhibit;
 use gtk::prelude::*;
 
 use std::cell::RefCell;
@@ -51,7 +53,7 @@ fn create_sub_window(application: &gtk::Application, title: &str, main_window_en
     window.set_title(title);
     window.set_default_size(400, 200);
 
-    window.connect_delete_event(clone!(windows => move |_, _| {
+    window.connect_close_request(clone!(windows => move |_| {
         windows.borrow_mut().remove(&id);
         Inhibit(false)
     }));
@@ -63,7 +65,7 @@ fn create_sub_window(application: &gtk::Application, title: &str, main_window_en
     }));
     window.add(&button);
 
-    window.show_all();
+    window.show();
     // Once the new window has been created, we put it into our hashmap so we can update its
     // title when needed.
     windows.borrow_mut().insert(id, window.downgrade());
@@ -76,7 +78,7 @@ fn create_main_window(application: &gtk::Application) -> gtk::ApplicationWindow 
     window.set_default_size(400, 200);
     window.set_position(gtk::WindowPosition::Center);
 
-    window.show_all();
+    window.show();
     window
 }
 
@@ -133,7 +135,7 @@ fn build_ui(application: &gtk::Application) {
     window.set_focus(Some(&button));
 
     // Then we show everything.
-    window.show_all();
+    window.show();
 }
 
 fn main() {
