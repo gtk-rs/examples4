@@ -1,13 +1,11 @@
-#![cfg_attr(not(feature = "gtk_3_10"), allow(unused_variables, unused_mut))]
-
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
-use gtk::{
-    ApplicationWindow, Builder, Button, Grid,
-};
+use gtk::{ApplicationWindow, Builder, Button, Grid};
 
 use std::env::args;
 
@@ -36,26 +34,42 @@ fn build_ui(application: &gtk::Application) {
     let weak_grid = grid.downgrade();
     button6.connect_clicked(move |button| {
         let grid = upgrade_weak!(weak_grid);
-        let height = grid.get_cell_height(button);
+        let layout_manager = grid
+            .get_layout_manager()
+            .expect("Couldn't get layout manager");
+        let layout_child = layout_manager
+            .get_layout_child(button)
+            .expect("Couldn't get layout child")
+            .dynamic_cast::<gtk::GridLayoutChild>()
+            .expect("Couldn't downcast to GridLayoutChild");
+        let height = layout_child.get_row_span();
         let new_height = if height == 2 { 1 } else { 2 };
-        grid.set_cell_height(button, new_height);
+        layout_child.set_row_span(new_height);
     });
     let button7: Button = builder.get_object("button7").expect("Couldn't get button7");
     let weak_grid = grid.downgrade();
     button7.connect_clicked(move |button| {
         let grid = upgrade_weak!(weak_grid);
-        let left_attach = grid.get_cell_left_attach(button);
+        let layout_manager = grid
+            .get_layout_manager()
+            .expect("Couldn't get layout manager");
+        let layout_child = layout_manager
+            .get_layout_child(button)
+            .expect("Couldn't get layout child")
+            .dynamic_cast::<gtk::GridLayoutChild>()
+            .expect("Couldn't downcast to GridLayoutChild");
+        let left_attach = layout_child.get_left_attach();
         let new_left_attach = if left_attach == 2 { 0 } else { left_attach + 1 };
-        grid.set_cell_left_attach(button, new_left_attach);
+        layout_child.set_left_attach(new_left_attach);
     });
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
-    let application = gtk::Application::new(Some("com.github.gtk-rs.examples.grid"),
-                                            Default::default())
-                                       .expect("Initialization failed...");
+    let application =
+        gtk::Application::new(Some("com.github.gtk-rs.examples.grid"), Default::default())
+            .expect("Initialization failed...");
 
     application.connect_activate(|app| {
         build_ui(app);
