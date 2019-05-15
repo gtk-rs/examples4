@@ -6,11 +6,13 @@ extern crate gio;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
+use glib::signal::Inhibit;
 use gtk::prelude::*;
 use gtk::{
     AboutDialog, ApplicationWindow, AppChooserDialog, Builder, Button, Dialog, Entry,
     FileChooserAction, FileChooserDialog, FontChooserDialog, Scale, SpinButton,
-    RecentChooserDialog, ResponseType, Spinner, Switch, Window,
+    ResponseType, Spinner, Switch, Window,
 };
 
 use std::env::args;
@@ -133,21 +135,6 @@ fn build_ui(application: &gtk::Application) {
         dialog.destroy();
     }));
 
-    let button_recent: Button = builder.get_object("button_recent")
-        .expect("Couldn't get button_recent");
-    button_recent.connect_clicked(clone!(window_weak => move |_| {
-        let window = upgrade_weak!(window_weak);
-
-        let dialog = RecentChooserDialog::new(Some("Recent chooser test"), Some(&window));
-        dialog.add_buttons(&[
-            ("Ok", ResponseType::Ok),
-            ("Cancel", ResponseType::Cancel)
-        ]);
-
-        dialog.run();
-        dialog.destroy();
-    }));
-
     let file_button: Button = builder.get_object("file_button")
         .expect("Couldn't get file_button");
     file_button.connect_clicked(clone!(window_weak => move |_| {
@@ -155,7 +142,7 @@ fn build_ui(application: &gtk::Application) {
 
         //entry.set_text("Clicked!");
         let dialog = FileChooserDialog::new(Some("Choose a file"), Some(&window),
-                                            FileChooserAction::Open);
+                                            FileChooserAction::Open, &[]);
         dialog.add_buttons(&[
             ("Open", ResponseType::Ok),
             ("Cancel", ResponseType::Cancel)
@@ -183,7 +170,7 @@ fn build_ui(application: &gtk::Application) {
     }));
 
     let switch: Switch = builder.get_object("switch").expect("Couldn't get switch");
-    switch.connect_changed_active(clone!(entry_weak => move |switch| {
+    switch.connect_property_active_notify(clone!(entry_weak => move |switch| {
         let entry = upgrade_weak!(entry_weak);
 
         if switch.get_active() {
@@ -200,11 +187,11 @@ fn build_ui(application: &gtk::Application) {
         about_clicked(x, &dialog)
     });
 
-    window.connect_key_press_event(clone!(entry_weak => move |_, key| {
+    let event = gtk::EventControllerKey::new();
+    window.add_controller(&event);
+    event.set_propagation_phase(gtk::PropagationPhase::Capture);
+    event.connect_key_pressed(clone!(entry_weak => move |_, keyval, _, keystate| {
         let entry = upgrade_weak!(entry_weak, Inhibit(false));
-
-        let keyval = key.get_keyval();
-        let keystate = key.get_state();
 
         println!("key pressed: {} / {:?}", keyval, keystate);
         println!("text: {}", entry.get_text().expect("Couldn't get text from entry"));
@@ -216,7 +203,7 @@ fn build_ui(application: &gtk::Application) {
         Inhibit(false)
     }));
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
