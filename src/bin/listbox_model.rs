@@ -16,6 +16,7 @@ extern crate gio;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 
 use gtk::ResponseType;
@@ -60,7 +61,6 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("ListBox Model Sample");
-    window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(320, 480);
 
@@ -80,7 +80,7 @@ fn build_ui(application: &gtk::Application) {
     //
     // The gtk::ListBoxRow can contain any possible widgets.
     let listbox = gtk::ListBox::new();
-    listbox.bind_model(Some(&model), clone!(window_weak => move |item| {
+    listbox.bind_model(Some(&model), Some(Box::new(clone!(window_weak => move |item| {
         let box_ = gtk::ListBoxRow::new();
         let item = item.downcast_ref::<RowData>().expect("Row data is of wrong type");
 
@@ -99,13 +99,14 @@ fn build_ui(application: &gtk::Application) {
         item.bind_property("name", &label, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
-        hbox.pack_start(&label, true, true, 0);
+        label.set_property_expand(true);
+        hbox.add(&label);
 
         let spin_button = gtk::SpinButton::new_with_range(0.0, 100.0, 1.0);
         item.bind_property("count", &spin_button, "value")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE | glib::BindingFlags::BIDIRECTIONAL)
             .build();
-        hbox.pack_start(&spin_button, false, false, 0);
+        hbox.add(&spin_button);
 
         // When the edit button is clicked, a new modal dialog is created for editing
         // the corresponding row
@@ -143,9 +144,9 @@ fn build_ui(application: &gtk::Application) {
                 .build();
             content_area.add(&spin_button);
 
-            dialog.show_all();
+            dialog.show();
         }));
-        hbox.pack_start(&edit_button, false, false, 0);
+        hbox.add(&edit_button);
 
         box_.add(&hbox);
 
@@ -157,10 +158,8 @@ fn build_ui(application: &gtk::Application) {
             edit_button.emit_clicked();
         });
 
-        box_.show_all();
-
         box_.upcast::<gtk::Widget>()
-    }));
+    }))));
 
     let scrolled_window = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
     scrolled_window.add(&listbox);
@@ -202,7 +201,7 @@ fn build_ui(application: &gtk::Application) {
                 dialog.destroy();
             }));
 
-            dialog.show_all();
+            dialog.show();
     }));
 
     hbox.add(&add_button);
@@ -221,8 +220,11 @@ fn build_ui(application: &gtk::Application) {
     }));
     hbox.add(&delete_button);
 
-    vbox.pack_start(&hbox, false, false, 0);
-    vbox.pack_start(&scrolled_window, true, true, 0);
+    vbox.add(&hbox);
+    scrolled_window.set_property_expand(true);
+    vbox.add(&scrolled_window);
+
+    vbox.set_property_margin(10);
 
     window.add(&vbox);
 
@@ -230,7 +232,7 @@ fn build_ui(application: &gtk::Application) {
         model.append(&RowData::new(&format!("Name {}", i), i*10));
     }
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {

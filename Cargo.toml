@@ -93,7 +93,7 @@ name = "gtktest"
 
 [[bin]]
 name = "listbox_model"
-required-features = ["gtk/v3_16", "gio/v2_44", "subclassing"]
+required-features = ["gio/v2_44", "subclassing"]
 
 [[bin]]
 name = "menu_bar"
