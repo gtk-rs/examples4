@@ -1,7 +1,9 @@
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 
 use std::env::args;
@@ -23,11 +25,11 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("List Store");
-    window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(280, 250);
 
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 8);
+    vbox.set_property_margin(10);
     window.add(&vbox);
 
     let label = gtk::Label::new(
@@ -50,10 +52,10 @@ fn build_ui(application: &gtk::Application) {
 
     add_columns(&model, &treeview);
 
-    window.show_all();
+    window.show();
 
     let model = model.clone();
-    timeout_add(80, move || spinner_timeout(&model));
+    glib::timeout_add_local(80, move || spinner_timeout(&model));
 }
 
 struct Data {
@@ -64,15 +66,15 @@ struct Data {
 }
 
 fn create_model() -> gtk::ListStore {
-    let col_types: [gtk::Type; 8] = [
-        gtk::Type::Bool,
-        gtk::Type::U32,
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::U32,
-        gtk::Type::String,
-        gtk::Type::Bool,
-        gtk::Type::Bool,
+    let col_types: [glib::Type; 8] = [
+        glib::Type::Bool,
+        glib::Type::U32,
+        glib::Type::String,
+        glib::Type::String,
+        glib::Type::U32,
+        glib::Type::String,
+        glib::Type::Bool,
+        glib::Type::Bool,
     ];
 
     let data: [Data; 14] = [
