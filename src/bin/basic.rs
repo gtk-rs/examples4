@@ -20,10 +20,7 @@ fn build_ui(application: &gtk::Application) {
     window.set_default_size(350, 70);
 
     let button = gtk::Button::new_with_label("Click me!");
-    button.set_margin_top(10);
-    button.set_margin_bottom(10);
-    button.set_margin_start(10);
-    button.set_margin_end(10);
+    button.set_property_margin(10);
 
     window.add(&button);
     window.show();

@@ -28,10 +28,7 @@ fn build_ui(application: &gtk::Application) {
     let time = current_time();
     let label = gtk::Label::new(None);
     label.set_text(&time);
-    label.set_margin_top(10);
-    label.set_margin_bottom(10);
-    label.set_margin_start(10);
-    label.set_margin_end(10);
+    label.set_property_margin(10);
 
     window.add(&label);
 

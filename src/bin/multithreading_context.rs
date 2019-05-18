@@ -21,10 +21,7 @@ fn build_ui(application: &gtk::Application) {
     scroll.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
     scroll.add(&text_view);
 
-    scroll.set_margin_top(10);
-    scroll.set_margin_bottom(10);
-    scroll.set_margin_start(10);
-    scroll.set_margin_end(10);
+    scroll.set_property_margin(10);
 
     let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
