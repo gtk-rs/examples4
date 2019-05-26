@@ -1,9 +1,11 @@
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
-use gtk::{IconSize, Orientation, ReliefStyle, Widget};
+use gtk::{Orientation, ReliefStyle, Widget};
 
 use std::env::args;
 
@@ -35,8 +37,7 @@ impl Notebook {
     }
 
     fn create_tab(&mut self, title: &str, widget: Widget) -> u32 {
-        let close_image = gtk::Image::new_from_icon_name(Some("window-close"),
-                                                         IconSize::Button);
+        let close_image = gtk::Image::new_from_icon_name(Some("window-close"));
         let button = gtk::Button::new();
         let label = gtk::Label::new(Some(title));
         let tab = gtk::Box::new(Orientation::Horizontal, 0);
@@ -45,9 +46,8 @@ impl Notebook {
         button.set_focus_on_click(false);
         button.add(&close_image);
 
-        tab.pack_start(&label, false, false, 0);
-        tab.pack_start(&button, false, false, 0);
-        tab.show_all();
+        tab.add(&label);
+        tab.add(&button);
 
         let index = self.notebook.append_page(&widget, Some(&tab));
 
@@ -81,7 +81,7 @@ fn build_ui(application: &gtk::Application) {
     }
 
     window.add(&notebook.notebook);
-    window.show_all();
+    window.show();
 }
 
 fn main() {
