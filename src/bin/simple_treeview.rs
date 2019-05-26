@@ -3,9 +3,11 @@
 //! This sample demonstrates how to create a TreeView with a ListStore.
 
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::{
     ApplicationWindow, CellRendererText, Label, ListStore, Orientation, TreeView, TreeViewColumn,
@@ -91,7 +93,7 @@ fn build_ui(application: &gtk::Application) {
     // Adding the layout to the window.
     window.add(&vertical_layout);
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
