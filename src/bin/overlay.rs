@@ -8,6 +8,7 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 
 use std::env::args;
@@ -51,7 +52,7 @@ fn build_ui(application: &gtk::Application) {
     // The overlay label.
     let overlay_text = gtk::Label::new(Some("0"));
     // We need to name it in order to apply CSS on it.
-    gtk::WidgetExt::set_name(&overlay_text, "overlay-label");
+    gtk::WidgetExtManual::set_name(&overlay_text, "overlay-label");
     // We put the overlay in the top-right corner of the window.
     overlay_text.set_halign(gtk::Align::End);
     overlay_text.set_valign(gtk::Align::Start);
@@ -89,7 +90,7 @@ fn build_ui(application: &gtk::Application) {
     // Then we add the overlay container inside our window.
     window.add(&overlay);
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
@@ -101,10 +102,9 @@ fn main() {
         // We add a bit of CSS in order to make the overlay label easier to be seen.
         let provider = gtk::CssProvider::new();
         provider
-            .load_from_data(STYLE.as_bytes())
-            .expect("Failed to load CSS");
-        gtk::StyleContext::add_provider_for_screen(
-            &gdk::Screen::get_default().expect("Error initializing gtk css provider."),
+            .load_from_data(STYLE.as_bytes());
+        gtk::StyleContext::add_provider_for_display(
+            &gdk::Display::get_default().expect("Error initializing gtk css provider."),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
