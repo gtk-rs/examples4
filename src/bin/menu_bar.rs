@@ -5,12 +5,14 @@
 //! /!\ This is different from the system menu bar (which are preferred) available in `gio::Menu`!
 
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::{
-    AboutDialog, AccelFlags, AccelGroup, ApplicationWindow, CheckMenuItem, IconSize, Image, Label,
+    AboutDialog, AccelFlags, AccelGroup, ApplicationWindow, CheckMenuItem, Image, Label,
     Menu, MenuBar, MenuItem, WindowPosition,
 };
 
@@ -47,20 +49,20 @@ fn build_ui(application: &gtk::Application) {
     let about = MenuItem::new_with_label("About");
     let quit = MenuItem::new_with_label("Quit");
     let file_item = MenuItem::new();
-    let file_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    let file_box = gtk::Box::new(gtk::Orientation::Horizontal, 6);
     let file_image = Image::new_from_file("resources/file.png");
     let file_label = Label::new(Some("File"));
     let folder_item = MenuItem::new();
-    let folder_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    let folder_image = Image::new_from_icon_name(Some("folder-music-symbolic"), IconSize::Menu);
+    let folder_box = gtk::Box::new(gtk::Orientation::Horizontal, 6);
+    let folder_image = Image::new_from_icon_name(Some("folder-music-symbolic"));
     let folder_label = Label::new(Some("Folder"));
     let check_item = CheckMenuItem::new_with_label("Click me!");
 
-    file_box.pack_start(&file_image, false, false, 0);
-    file_box.pack_start(&file_label, true, true, 0);
+    file_box.add(&file_image);
+    file_box.add(&file_label);
     file_item.add(&file_box);
-    folder_box.pack_start(&folder_image, false, false, 0);
-    folder_box.pack_start(&folder_label, true, true, 0);
+    folder_box.add(&folder_image);
+    folder_box.add(&folder_label);
     folder_item.add(&folder_box);
     menu.append(&file_item);
     menu.append(&folder_item);
@@ -99,16 +101,17 @@ fn build_ui(application: &gtk::Application) {
     quit.add_accelerator("activate", &accel_group, key, modifier, AccelFlags::VISIBLE);
 
     let label = Label::new(Some("MenuBar example"));
+    label.set_property_expand(true);
 
-    v_box.pack_start(&menu_bar, false, false, 0);
-    v_box.pack_start(&label, true, true, 0);
+    v_box.add(&menu_bar);
+    v_box.add(&label);
     window.add(&v_box);
-    window.show_all();
+    window.show();
 
     about.connect_activate(move |_| {
         let p = AboutDialog::new();
         p.set_authors(&["gtk-rs developers"]);
-        p.set_website_label(Some("gtk-rs"));
+        p.set_website_label("gtk-rs");
         p.set_website(Some("http://gtk-rs.org"));
         p.set_authors(&["Gtk-rs developers"]);
         p.set_title("About!");
