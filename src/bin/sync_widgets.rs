@@ -8,6 +8,7 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::Builder;
 
@@ -32,7 +33,7 @@ fn build_ui(application: &gtk::Application) {
     let window: gtk::ApplicationWindow = builder.get_object("window").expect("Couldn't get window");
     window.set_application(Some(application));
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
