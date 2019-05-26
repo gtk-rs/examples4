@@ -77,15 +77,6 @@ name = "drag_and_drop"
 name = "drag_and_drop_textview"
 
 [[bin]]
-name = "gio_futures"
-required-features = ["futures"]
-
-[[bin]]
-name = "gio_futures_await"
-required-features = ["futures"]
-edition = "2018"
-
-[[bin]]
 name = "grid"
 
 [[bin]]
