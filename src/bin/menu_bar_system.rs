@@ -4,11 +4,13 @@
 //! over the `gtk::MenuBar` since it adapts to the targetted system.
 
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
-use gtk::{AboutDialog, ToVariant};
+use gtk::AboutDialog;
 
 use std::env::args;
 
@@ -102,7 +104,7 @@ fn add_actions(application: &gtk::Application, switch: &gtk::Switch, label: &gtk
     about.connect_activate(clone!(window => move |_, _| {
         let p = AboutDialog::new();
         p.set_authors(&["gtk-rs developers"]);
-        p.set_website_label(Some("gtk-rs"));
+        p.set_website_label("gtk-rs");
         p.set_website(Some("http://gtk-rs.org"));
         p.set_authors(&["Gtk-rs developers"]);
         p.set_title("About!");
@@ -132,23 +134,24 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("System menu bar");
-    window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(350, 70);
 
     let v_box = gtk::Box::new(gtk::Orientation::Vertical, 10);
     let label = gtk::Label::new(Some("Nothing happened yet"));
     let switch = gtk::Switch::new();
+    switch.set_property_expand(true);
 
-    v_box.pack_start(&label, false, false, 0);
-    v_box.pack_start(&switch, true, true, 0);
+    v_box.add(&label);
+    v_box.add(&switch);
+    v_box.set_property_margin(10);
     window.add(&v_box);
 
     build_system_menu(application);
 
     add_actions(application, &switch, &label, &window);
 
-    window.show_all();
+    window.show();
 }
 
 fn main() {
