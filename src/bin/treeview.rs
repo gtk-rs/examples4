@@ -9,6 +9,7 @@ extern crate gtk;
 
 use gdk_pixbuf::Pixbuf;
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::{
     ApplicationWindow, ButtonsType, CellRendererPixbuf, CellRendererText, DialogFlags,
@@ -91,7 +92,7 @@ fn build_ui(application: &gtk::Application) {
                           as the `resources` folder");
         }
 
-        gtk::idle_add(clone!(window => move || {
+        glib::idle_add_local(clone!(window => move || {
             let dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL,
                 MessageType::Error, ButtonsType::Ok, &msg);
             dialog.run();
@@ -133,7 +134,7 @@ fn build_ui(application: &gtk::Application) {
     split_pane.add(&right_tree);
 
     window.add(&split_pane);
-    window.show_all();
+    window.show();
 }
 
 fn main() {
