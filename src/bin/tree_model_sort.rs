@@ -4,6 +4,7 @@
 
 extern crate gtk;
 extern crate gio;
+extern crate glib;
 extern crate gdk;
 
 use std::env::args;
@@ -15,11 +16,10 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("Tree Model Sort Window");
-    window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(350, 70);
 
-    let store = gtk::TreeStore::new(&[gtk::Type::String]);
+    let store = gtk::TreeStore::new(&[glib::Type::String]);
     store.insert_with_values(None, None, &[0], &[&"One"]);
     store.insert_with_values(None, None, &[0], &[&"Two"]);
     store.insert_with_values(None, None, &[0], &[&"Three"]);
@@ -52,9 +52,11 @@ fn build_ui(application: &gtk::Application) {
                  real_path.get_indices());
     });
 
+    treeview.set_property_margin(10);
+
     // We finally add the `TreeView` to the window.
     window.add(&treeview);
-    window.show_all();
+    window.show();
 }
 
 fn main() {
