@@ -56,9 +56,6 @@ name = "basic"
 name = "builder_basics"
 
 [[bin]]
-name = "cairo_png"
-
-[[bin]]
 name = "cairo_threads"
 
 [[bin]]
