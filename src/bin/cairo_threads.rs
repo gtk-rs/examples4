@@ -10,7 +10,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::time::Duration;
 
-use cairo::prelude::*;
 use cairo::{Context, Format, ImageSurface};
 use gio::prelude::*;
 use glib::prelude::*;
