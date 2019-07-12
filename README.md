@@ -1,15 +1,15 @@
-# gtk-rs examples [![Build Status](https://travis-ci.org/gtk-rs/examples.png?branch=master)](https://travis-ci.org/gtk-rs/examples) [![Build status](https://ci.appveyor.com/api/projects/status/pi27a5xubp0ihl2d?svg=true)](https://ci.appveyor.com/project/GuillaumeGomez/examples)
+# gtk-rs examples for gtk4 [![Build Status](https://travis-ci.org/gtk-rs/examples4.png?branch=master)](https://travis-ci.org/gtk-rs/examples4)
 
-A few gtk-rs examples. To build, just do:
+A few gtk-rs examples for __gtk4__. To build, just do:
 
 ```Shell
 > cargo build
 ```
 
-or to enable GTK 3.x depending on the version needed by the example (check Cargo.toml `[features]` to see all specific GTK compile features available):
+or to enable GTK 4.x depending on the version needed by the example (check Cargo.toml `[features]` to see all specific GTK compile features available):
 
 ```Shell
-> cargo build --features gtk_3_18
+> cargo build --features [feature]
 > cargo build --all-features
 ```
 
