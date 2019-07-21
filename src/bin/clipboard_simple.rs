@@ -3,31 +3,15 @@
 //! From https://developer.gnome.org/gtkmm-tutorial/stable/sec-clipboard-examples.html.en
 extern crate gdk;
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use std::cell::RefCell;
 use std::env::args;
 
 use gio::prelude::*;
+use glib::signal::Inhibit;
 use gtk::prelude::*;
-
-// make moving clones into closures more convenient
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
 
 struct Ui {
     pub button_a1: gtk::ToggleButton,
@@ -45,11 +29,11 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     // Create the whole window
-    window.set_title("gtk::Clipboard Simple Example");
-    window.connect_delete_event(clone!(window => move |_, _| {
+    window.set_title("gdk::Clipboard Simple Example");
+    window.connect_close_request(|window| {
         window.destroy();
         Inhibit(false)
-    }));
+    });
 
     // Create the button grid
     let grid = gtk::Grid::new();
@@ -67,10 +51,12 @@ fn build_ui(application: &gtk::Application) {
     // Add in the action buttons
     let copy_button = gtk::Button::new_with_mnemonic("_Copy");
     let paste_button = gtk::Button::new_with_mnemonic("_Paste");
-    let button_box = gtk::ButtonBox::new(gtk::Orientation::Horizontal);
-    button_box.set_layout(gtk::ButtonBoxStyle::End);
-    button_box.pack_start(&copy_button, false, false, 0);
-    button_box.pack_start(&paste_button, false, false, 0);
+    let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    copy_button.set_valign(gtk::Align::Center);
+    paste_button.set_valign(gtk::Align::Center);
+    button_box.set_halign(gtk::Align::End);
+    button_box.add(&copy_button);
+    button_box.add(&paste_button);
 
     // Pack widgets into the window and display everything
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -80,12 +66,15 @@ fn build_ui(application: &gtk::Application) {
          open a second instance of this example to try \
          pasting the copied data.",
     ));
-    vbox.pack_start(&label, true, true, 0);
-    vbox.pack_start(&grid, true, true, 0);
-    vbox.pack_start(&button_box, true, true, 0);
+    label.set_property_expand(true);
+    grid.set_property_expand(true);
+    button_box.set_property_expand(true);
+    vbox.add(&label);
+    vbox.add(&grid);
+    vbox.add(&button_box);
     window.add(&vbox);
 
-    window.show_all();
+    window.show();
 
     // Save out UI in thread-local storage so we can use it in callbacks later
     GLOBAL.with(move |global| {
@@ -124,14 +113,13 @@ fn build_ui(application: &gtk::Application) {
                 }
             }
         });
-        let clipboard = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+        let clipboard = gdk::Display::get_default().expect("No display").get_clipboard();
         clipboard.set_text(&s);
     });
     paste_button.connect_clicked(|_| {
-        let clipboard = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
-        clipboard.request_text(|_, t| {
-            if t.is_some() {
-                let t = t.unwrap();
+        let clipboard = gdk::Display::get_default().expect("No display").get_clipboard();
+        clipboard.read_text_async(None::<&gio::Cancellable>, |t| {
+            if let Ok(t) = t {
                 if t.len() >= 4 {
                     GLOBAL.with(|global| {
                         if let Some(ref ui) = *global.borrow() {
