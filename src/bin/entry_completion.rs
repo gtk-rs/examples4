@@ -9,6 +9,7 @@ extern crate gio;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::prelude::*;
 use gtk::prelude::*;
 
 use std::env::args;
@@ -29,8 +30,8 @@ struct Data {
 }
 
 fn create_list_model() -> gtk::ListStore {
-    let col_types: [gtk::Type; 1] = [
-        gtk::Type::String,
+    let col_types: [glib::Type; 1] = [
+        glib::Type::String,
     ];
 
     let data: [Data; 4] = [
@@ -55,7 +56,6 @@ fn build_ui(application: &gtk::Application) {
     // create the main window
     let window = gtk::ApplicationWindow::new(application);
     window.set_title("Entry with autocompletion");
-    window.set_border_width(5);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(840, 480);
 
@@ -84,13 +84,14 @@ fn build_ui(application: &gtk::Application) {
 
     let row = gtk::Box::new(gtk::Orientation::Vertical, 5);
     row.add(&win_title);
-    row.pack_start(&input_field, false, false, 10);
+    input_field.set_margin_top(10);
+    row.add(&input_field);
 
-    // window.add(&win_title);
+    row.set_property_margin(5);
     window.add(&row);
 
     // show everything
-    window.show_all();
+    window.show();
 }
 
 
