@@ -25,14 +25,14 @@ macro_rules! upgrade_weak {
 
 struct Notebook {
     notebook: gtk::Notebook,
-    tabs: Vec<gtk::Box>
+    tabs: Vec<gtk::Box>,
 }
 
 impl Notebook {
     fn new() -> Notebook {
         Notebook {
             notebook: gtk::Notebook::new(),
-            tabs: Vec::new()
+            tabs: Vec::new(),
         }
     }
 
@@ -54,8 +54,9 @@ impl Notebook {
         let notebook_weak = self.notebook.downgrade();
         button.connect_clicked(move |_| {
             let notebook = upgrade_weak!(notebook_weak);
-            let index = notebook.page_num(&widget)
-                                .expect("Couldn't get page_num from notebook");
+            let index = notebook
+                .page_num(&widget)
+                .expect("Couldn't get page_num from notebook");
             notebook.remove_page(Some(index));
         });
 
@@ -85,9 +86,11 @@ fn build_ui(application: &gtk::Application) {
 }
 
 fn main() {
-    let application = gtk::Application::new(Some("com.github.gtk-rs.examples.notebook"),
-                                            Default::default())
-                                       .expect("Initialization failed...");
+    let application = gtk::Application::new(
+        Some("com.github.gtk-rs.examples.notebook"),
+        Default::default(),
+    )
+    .expect("Initialization failed...");
 
     application.connect_activate(|app| {
         build_ui(app);

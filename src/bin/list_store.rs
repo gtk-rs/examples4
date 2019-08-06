@@ -32,10 +32,10 @@ fn build_ui(application: &gtk::Application) {
     vbox.set_property_margin(10);
     window.add(&vbox);
 
-    let label = gtk::Label::new(
-        Some("This is the bug list (note: not based on real data, it would be \
-              nice to have a nice ODBC interface to bugzilla or so, though)."),
-    );
+    let label = gtk::Label::new(Some(
+        "This is the bug list (note: not based on real data, it would be \
+         nice to have a nice ODBC interface to bugzilla or so, though).",
+    ));
     vbox.add(&label);
 
     let sw = gtk::ScrolledWindow::new(None::<&gtk::Adjustment>, None::<&gtk::Adjustment>);
@@ -295,10 +295,11 @@ fn spinner_timeout(model: &gtk::ListStore) -> Continue {
 }
 
 fn main() {
-    let application =
-        gtk::Application::new(Some("com.github.gtk-rs.examples.list-store"),
-                              Default::default())
-                         .expect("Initialization failed...");
+    let application = gtk::Application::new(
+        Some("com.github.gtk-rs.examples.list-store"),
+        Default::default(),
+    )
+    .expect("Initialization failed...");
 
     application.connect_startup(|app| {
         build_ui(app);

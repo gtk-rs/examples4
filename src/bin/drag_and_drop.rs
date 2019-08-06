@@ -16,7 +16,11 @@ fn build_ui(application: &gtk::Application) {
     // Configure button as drag source for text
     let button = gtk::Button::new_with_label("Drag here");
     let targets = gdk::ContentFormats::new(&["STRING", "text/plain"]);
-    button.drag_source_set(gdk::ModifierType::MODIFIER_MASK, Some(&targets), gdk::DragAction::COPY);
+    button.drag_source_set(
+        gdk::ModifierType::MODIFIER_MASK,
+        Some(&targets),
+        gdk::DragAction::COPY,
+    );
     button.connect_drag_data_get(|_, _, s| {
         let data = "I'm data!";
         s.set_text(data);
@@ -25,7 +29,11 @@ fn build_ui(application: &gtk::Application) {
 
     // Configure label as drag destination to receive text
     let label = gtk::Label::new(Some("Drop here"));
-    label.drag_dest_set(gtk::DestDefaults::ALL, Some(&targets), gdk::DragAction::COPY);
+    label.drag_dest_set(
+        gtk::DestDefaults::ALL,
+        Some(&targets),
+        gdk::DragAction::COPY,
+    );
     label.connect_drag_data_received(|w, _, s| {
         w.set_text(&s.get_text().expect("Couldn't get text"));
     });
@@ -45,9 +53,11 @@ fn build_ui(application: &gtk::Application) {
 }
 
 fn main() {
-    let application = gtk::Application::new(Some("com.github.gtk-rs.examples.drag_and_drop"),
-                                            Default::default())
-                                       .expect("Initialization failed...");
+    let application = gtk::Application::new(
+        Some("com.github.gtk-rs.examples.drag_and_drop"),
+        Default::default(),
+    )
+    .expect("Initialization failed...");
 
     application.connect_activate(|app| {
         build_ui(app);

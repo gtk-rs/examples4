@@ -12,8 +12,8 @@ use gio::prelude::*;
 use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::{
-    AboutDialog, AccelFlags, AccelGroup, ApplicationWindow, CheckMenuItem, Image, Label,
-    Menu, MenuBar, MenuItem, WindowPosition,
+    AboutDialog, AccelFlags, AccelGroup, ApplicationWindow, CheckMenuItem, Image, Label, Menu,
+    MenuBar, MenuItem, WindowPosition,
 };
 
 use std::env::args;
@@ -129,9 +129,11 @@ fn build_ui(application: &gtk::Application) {
 }
 
 fn main() {
-    let application = gtk::Application::new(Some("com.github.gtk-rs.examples.menu_bar"),
-                                            Default::default())
-                                       .expect("Initialization failed...");
+    let application = gtk::Application::new(
+        Some("com.github.gtk-rs.examples.menu_bar"),
+        Default::default(),
+    )
+    .expect("Initialization failed...");
 
     application.connect_activate(|app| {
         build_ui(app);

@@ -1,8 +1,8 @@
 #![cfg_attr(not(feature = "gtk_3_10"), allow(unused_variables, unused_mut))]
 
-extern crate glib;
 extern crate gdk;
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
@@ -10,9 +10,9 @@ use glib::prelude::*;
 use glib::signal::Inhibit;
 use gtk::prelude::*;
 use gtk::{
-    AboutDialog, ApplicationWindow, AppChooserDialog, Builder, Button, Dialog, Entry,
-    FileChooserAction, FileChooserDialog, FontChooserDialog, Scale, SpinButton,
-    ResponseType, Spinner, Switch, Window,
+    AboutDialog, AppChooserDialog, ApplicationWindow, Builder, Button, Dialog, Entry,
+    FileChooserAction, FileChooserDialog, FontChooserDialog, ResponseType, Scale, SpinButton,
+    Spinner, Switch, Window,
 };
 
 use std::env::args;
@@ -50,7 +50,10 @@ macro_rules! upgrade_weak {
 }
 
 fn about_clicked(button: &Button, dialog: &AboutDialog) {
-    if let Some(window) = button.get_toplevel().and_then(|w| w.downcast::<Window>().ok()) {
+    if let Some(window) = button
+        .get_toplevel()
+        .and_then(|w| w.downcast::<Window>().ok())
+    {
         dialog.set_transient_for(Some(&window));
     }
 
@@ -65,7 +68,11 @@ fn about_clicked(button: &Button, dialog: &AboutDialog) {
 }
 
 fn build_ui(application: &gtk::Application) {
-    println!("Major: {}, Minor: {}", gtk::get_major_version(), gtk::get_minor_version());
+    println!(
+        "Major: {}, Minor: {}",
+        gtk::get_major_version(),
+        gtk::get_minor_version()
+    );
     let glade_src = include_str!("gtktest.glade");
     let builder = Builder::new_from_string(glade_src);
 
@@ -78,10 +85,13 @@ fn build_ui(application: &gtk::Application) {
         format!("<{:.*}>", digits, value)
     });
 
-    let spin_button: SpinButton = builder.get_object("spin_button")
-                                             .expect("Couldn't get spin_button");
+    let spin_button: SpinButton = builder
+        .get_object("spin_button")
+        .expect("Couldn't get spin_button");
     spin_button.connect_input(|spin_button| {
-        let text = spin_button.get_text().expect("Couldn't get text from spin_button");
+        let text = spin_button
+            .get_text()
+            .expect("Couldn't get text from spin_button");
         println!("spin_button_input: \"{}\"", text);
         match text.parse::<f64>() {
             Ok(value) if value >= 90. => {
@@ -124,7 +134,8 @@ fn build_ui(application: &gtk::Application) {
         entry.set_text(&format!("Clicked {}", ret));
     }));
 
-    let button_font: Button = builder.get_object("button_font")
+    let button_font: Button = builder
+        .get_object("button_font")
         .expect("Couldn't get button_font");
     button_font.connect_clicked(clone!(window_weak => move |_| {
             let window = upgrade_weak!(window_weak);
@@ -135,7 +146,8 @@ fn build_ui(application: &gtk::Application) {
         dialog.destroy();
     }));
 
-    let file_button: Button = builder.get_object("file_button")
+    let file_button: Button = builder
+        .get_object("file_button")
         .expect("Couldn't get file_button");
     file_button.connect_clicked(clone!(window_weak => move |_| {
         let window = upgrade_weak!(window_weak);
@@ -156,7 +168,9 @@ fn build_ui(application: &gtk::Application) {
         println!("Files: {:?}", files);
     }));
 
-    let app_button: Button = builder.get_object("app_button").expect("Couldn't get app_button");
+    let app_button: Button = builder
+        .get_object("app_button")
+        .expect("Couldn't get app_button");
     app_button.connect_clicked(clone!(window_weak => move |_| {
         let window = upgrade_weak!(window_weak);
 
@@ -180,12 +194,11 @@ fn build_ui(application: &gtk::Application) {
         }
     }));
 
-    let button_about: Button = builder.get_object("button_about")
+    let button_about: Button = builder
+        .get_object("button_about")
         .expect("Couldn't get button_about");
     let dialog: AboutDialog = builder.get_object("dialog").expect("Couldn't get dialog");
-    button_about.connect_clicked(move |x| {
-        about_clicked(x, &dialog)
-    });
+    button_about.connect_clicked(move |x| about_clicked(x, &dialog));
 
     let event = gtk::EventControllerKey::new();
     window.add_controller(&event);
@@ -207,9 +220,11 @@ fn build_ui(application: &gtk::Application) {
 }
 
 fn main() {
-    let application = gtk::Application::new(Some("com.github.gtk-rs.examples.gtktest"),
-                                            Default::default())
-                                       .expect("Initialization failed...");
+    let application = gtk::Application::new(
+        Some("com.github.gtk-rs.examples.gtktest"),
+        Default::default(),
+    )
+    .expect("Initialization failed...");
 
     application.connect_activate(|app| {
         build_ui(app);

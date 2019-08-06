@@ -113,11 +113,15 @@ fn build_ui(application: &gtk::Application) {
                 }
             }
         });
-        let clipboard = gdk::Display::get_default().expect("No display").get_clipboard();
+        let clipboard = gdk::Display::get_default()
+            .expect("No display")
+            .get_clipboard();
         clipboard.set_text(&s);
     });
     paste_button.connect_clicked(|_| {
-        let clipboard = gdk::Display::get_default().expect("No display").get_clipboard();
+        let clipboard = gdk::Display::get_default()
+            .expect("No display")
+            .get_clipboard();
         clipboard.read_text_async(None::<&gio::Cancellable>, |t| {
             if let Ok(t) = t {
                 if t.len() >= 4 {

@@ -12,15 +12,15 @@ use gtk::{ApplicationWindow, Builder, MessageDialog};
 
 use std::env::args;
 
-
 fn build_ui(application: &gtk::Application) {
     let glade_src = include_str!("builder_signal.glade");
     let builder = Builder::new_from_string(glade_src);
 
     let window: ApplicationWindow = builder.get_object("window1").expect("Couldn't get window1");
     window.set_application(Some(application));
-    let dialog: MessageDialog = builder.get_object("messagedialog1")
-                                       .expect("Couldn't get messagedialog1");
+    let dialog: MessageDialog = builder
+        .get_object("messagedialog1")
+        .expect("Couldn't get messagedialog1");
 
     builder.connect_signals(move |_, handler_name| {
         if handler_name == "button1_clicked" {
@@ -39,9 +39,11 @@ fn build_ui(application: &gtk::Application) {
 }
 
 fn main() {
-    let application = gtk::Application::new(Some("com.github.gtk-rs.examples.builder_signal"),
-                                            Default::default())
-                                       .expect("Initialization failed...");
+    let application = gtk::Application::new(
+        Some("com.github.gtk-rs.examples.builder_signal"),
+        Default::default(),
+    )
+    .expect("Initialization failed...");
 
     application.connect_activate(|app| {
         build_ui(app);
