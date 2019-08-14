@@ -62,6 +62,9 @@ name = "builder_signal"
 name = "builders"
 
 [[bin]]
+name = "cairo_png"
+
+[[bin]]
 name = "cairo_threads"
 
 [[bin]]
@@ -81,6 +84,15 @@ name = "drag_and_drop"
 
 [[bin]]
 name = "drag_and_drop_textview"
+
+[[bin]]
+name = "gio_futures"
+required-features = ["futures"]
+
+[[bin]]
+name = "gio_futures_await"
+required-features = ["futures"]
+edition = "2018"
 
 [[bin]]
 name = "grid"
