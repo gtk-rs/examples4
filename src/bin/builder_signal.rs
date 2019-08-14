@@ -23,8 +23,13 @@ fn build_ui(application: &gtk::Application) {
         .expect("Couldn't get messagedialog1");
 
     builder.connect_signals(move |_, handler_name| {
+        // This is the one-time callback to register signals.
+        // Here we map each handler name to its handler.
+
         if handler_name == "button1_clicked" {
             let dialog = dialog.clone();
+
+            // Return the signal handler.
             Box::new(move |_| {
                 dialog.run();
                 dialog.hide();
