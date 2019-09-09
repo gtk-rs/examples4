@@ -44,7 +44,6 @@ git = "https://github.com/gtk-rs/gtk4"
 
 [features]
 futures = ["futures-preview", "glib/futures", "gio/futures"]
-subclassing = ["glib/subclassing"]
 
 [[bin]]
 name = "accessibility"
@@ -102,7 +101,7 @@ name = "gtktest"
 
 [[bin]]
 name = "listbox_model"
-required-features = ["gio/v2_44", "subclassing"]
+required-features = ["gio/v2_44"]
 
 [[bin]]
 name = "menu_bar"
