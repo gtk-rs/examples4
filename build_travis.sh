@@ -6,9 +6,9 @@ set -e
 if [ "$GTK" = latest -o "$GTK" = "3.96" ]; then
 	BUNDLE="gtk-3.96.0-1"
 	if [ "$TRAVIS_RUST_VERSION" = "nightly" ]; then
-		FEATURES=futures,gio/v2_44,subclassing
+		FEATURES=futures,gio/v2_44
 	else
-		FEATURES=gio/v2_44,subclassing
+		FEATURES=gio/v2_44
 	fi
 fi
 
