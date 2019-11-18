@@ -7,7 +7,7 @@ autobins = false
 [dependencies]
 chrono = "0.4"
 url = "1.4"
-futures-preview = { version = "0.3.0-alpha.15", optional = true}
+futures = "0.3"
 
 [dependencies.atk]
 git = "https://github.com/gtk-rs/atk"
@@ -41,9 +41,6 @@ git = "https://github.com/gtk-rs/gdk4"
 [dependencies.gtk]
 package = "gtk4"
 git = "https://github.com/gtk-rs/gtk4"
-
-[features]
-futures = ["futures-preview", "glib/futures", "gio/futures"]
 
 [[bin]]
 name = "accessibility"
@@ -86,11 +83,9 @@ name = "drag_and_drop_textview"
 
 [[bin]]
 name = "gio_futures"
-required-features = ["futures"]
 
 [[bin]]
 name = "gio_futures_await"
-required-features = ["futures"]
 edition = "2018"
 
 [[bin]]

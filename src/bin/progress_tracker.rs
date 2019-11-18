@@ -7,7 +7,7 @@ extern crate gtk;
 use gio::prelude::*;
 use gtk::prelude::*;
 
-use gio::signal::Inhibit;
+use glib::signal::Inhibit;
 use std::cell::{Cell, RefCell};
 use std::env::args;
 use std::rc::Rc;
