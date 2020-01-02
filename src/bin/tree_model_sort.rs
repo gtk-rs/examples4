@@ -7,8 +7,7 @@ extern crate gio;
 extern crate glib;
 extern crate gtk;
 
-use gio::ApplicationExt;
-use gio::ApplicationExtManual;
+use gio::prelude::{ApplicationExt, ApplicationExtManual};
 use gtk::prelude::*;
 use std::env::args;
 
