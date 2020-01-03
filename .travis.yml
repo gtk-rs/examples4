@@ -1,10 +1,10 @@
 dist: xenial
 language: rust
 rust:
-- nightly
-- beta
-- 1.36.0 # stable
-- stable
+  - nightly
+  - beta
+  - 1.39.0 # minimum supported version
+  - stable
 addons:
   apt:
     packages:
