@@ -16,7 +16,6 @@ extern crate gio;
 extern crate gtk;
 
 use gio::prelude::*;
-use glib::prelude::*;
 use gtk::prelude::*;
 
 use gtk::ResponseType;
@@ -25,46 +24,11 @@ use std::env::args;
 
 use row_data::RowData;
 
-// make moving clones into closures more convenient
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
-
-// upgrade weak reference or return
-#[macro_export]
-macro_rules! upgrade_weak {
-    ($x:ident, $r:expr) => {{
-        match $x.upgrade() {
-            Some(o) => o,
-            None => return $r,
-        }
-    }};
-    ($x:ident) => {
-        upgrade_weak!($x, ())
-    };
-}
-
 fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("ListBox Model Sample");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(320, 480);
-
-    let window_weak = window.downgrade();
 
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 5);
 
@@ -80,7 +44,7 @@ fn build_ui(application: &gtk::Application) {
     //
     // The gtk::ListBoxRow can contain any possible widgets.
     let listbox = gtk::ListBox::new();
-    listbox.bind_model(Some(&model), Some(Box::new(clone!(window_weak => move |item| {
+    listbox.bind_model(Some(&model), Some(Box::new(clone!(@weak window => @default-panic, move |item| {
         let box_ = gtk::ListBoxRow::new();
         let item = item.downcast_ref::<RowData>().expect("Row data is of wrong type");
 
@@ -99,20 +63,19 @@ fn build_ui(application: &gtk::Application) {
         item.bind_property("name", &label, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
-        label.set_property_expand(true);
-        hbox.add(&label);
+        label.set_hexpand(true);
+        hbox.append(&label);
 
-        let spin_button = gtk::SpinButton::new_with_range(0.0, 100.0, 1.0);
+        let spin_button = gtk::SpinButton::with_range(0.0, 100.0, 1.0);
         item.bind_property("count", &spin_button, "value")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE | glib::BindingFlags::BIDIRECTIONAL)
             .build();
-        hbox.add(&spin_button);
+        hbox.append(&spin_button);
 
         // When the edit button is clicked, a new modal dialog is created for editing
         // the corresponding row
-        let edit_button = gtk::Button::new_with_label("Edit");
-        edit_button.connect_clicked(clone!(window_weak, item => move |_| {
-            let window = upgrade_weak!(window_weak);
+        let edit_button = gtk::Button::with_label("Edit");
+        edit_button.connect_clicked(clone!(@weak edit_button, @weak item => move |_| {
 
             let dialog = gtk::Dialog::new_with_buttons(Some("Edit Item"), Some(&window), gtk::DialogFlags::MODAL,
                 &[("Close", ResponseType::Close)]);
@@ -131,38 +94,34 @@ fn build_ui(application: &gtk::Application) {
                 .build();
 
             // Activating the entry (enter) will send response `ResponseType::Close` to the dialog
-            let dialog_weak = dialog.downgrade();
-            entry.connect_activate(move |_| {
-                let dialog = upgrade_weak!(dialog_weak);
+            entry.connect_activate(clone!(@weak dialog => move |_| {
                 dialog.response(ResponseType::Close);
-            });
-            content_area.add(&entry);
+            }));
+            content_area.append(&entry);
 
-            let spin_button = gtk::SpinButton::new_with_range(0.0, 100.0, 1.0);
+            let spin_button = gtk::SpinButton::with_range(0.0, 100.0, 1.0);
             item.bind_property("count", &spin_button, "value")
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE | glib::BindingFlags::BIDIRECTIONAL)
                 .build();
-            content_area.add(&spin_button);
+            content_area.append(&spin_button);
 
             dialog.show();
         }));
-        hbox.add(&edit_button);
+        hbox.append(&edit_button);
 
-        box_.add(&hbox);
+        box_.set_child(Some(&hbox));
 
         // When a row is activated (select + enter) we simply emit the clicked
         // signal on the corresponding edit button to open the edit dialog
-        let edit_button_weak = edit_button.downgrade();
-        box_.connect_activate(move |_| {
-            let edit_button = upgrade_weak!(edit_button_weak);
+        box_.connect_activate(clone!(@weak edit_button => move |_| {
             edit_button.emit_clicked();
-        });
+        }));
 
         box_.upcast::<gtk::Widget>()
     }))));
 
-    let scrolled_window = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
-    scrolled_window.add(&listbox);
+    let scrolled_window = gtk::ScrolledWindow::new();
+    scrolled_window.set_child(Some(&listbox));
 
     let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 5);
 
@@ -171,10 +130,8 @@ fn build_ui(application: &gtk::Application) {
     // and only create it once the Ok button in the dialog is clicked, and only
     // then add it to the model. Once added to the model, it will immediately
     // appear in the listbox UI
-    let add_button = gtk::Button::new_with_label("Add");
-    add_button.connect_clicked(clone!(window_weak, model => move |_| {
-            let window = upgrade_weak!(window_weak);
-
+    let add_button = gtk::Button::with_label("Add");
+    add_button.connect_clicked(clone!(@weak window, @weak model => move |_| {
             let dialog = gtk::Dialog::new_with_buttons(Some("Add Item"), Some(&window), gtk::DialogFlags::MODAL,
                 &[("Ok", ResponseType::Ok), ("Cancel", ResponseType::Cancel)]);
             dialog.set_default_response(ResponseType::Ok);
@@ -182,17 +139,15 @@ fn build_ui(application: &gtk::Application) {
             let content_area = dialog.get_content_area();
 
             let entry = gtk::Entry::new();
-            let dialog_weak = dialog.downgrade();
-            entry.connect_activate(move |_| {
-                let dialog = upgrade_weak!(dialog_weak);
+            entry.connect_activate(clone!(@weak dialog => move |_| {
                 dialog.response(ResponseType::Ok);
-            });
-            content_area.add(&entry);
+            }));
+            content_area.append(&entry);
 
-            let spin_button = gtk::SpinButton::new_with_range(0.0, 100.0, 1.0);
-            content_area.add(&spin_button);
+            let spin_button = gtk::SpinButton::with_range(0.0, 100.0, 1.0);
+            content_area.append(&spin_button);
 
-            dialog.connect_response(clone!(model, entry, spin_button => move |dialog, resp| {
+            dialog.connect_response(clone!(@weak model, @weak entry, @weak spin_button => move |dialog, resp| {
                 if let Some(text) = entry.get_text() {
                     if !text.is_empty() && resp == ResponseType::Ok {
                         model.append(&RowData::new(&text, spin_button.get_value() as u32));
@@ -204,13 +159,13 @@ fn build_ui(application: &gtk::Application) {
             dialog.show();
     }));
 
-    hbox.add(&add_button);
+    hbox.append(&add_button);
 
     // Via the delete button we delete the item from the model that
     // is at the index of the selected row. Also deleting from the
     // model is immediately reflected in the listbox.
-    let delete_button = gtk::Button::new_with_label("Delete");
-    delete_button.connect_clicked(clone!(model, listbox => move |_| {
+    let delete_button = gtk::Button::with_label("Delete");
+    delete_button.connect_clicked(clone!(@weak model, @weak listbox => move |_| {
         let selected = listbox.get_selected_row();
 
         if let Some(selected) = selected {
@@ -218,15 +173,14 @@ fn build_ui(application: &gtk::Application) {
             model.remove(idx as u32);
         }
     }));
-    hbox.add(&delete_button);
+    hbox.append(&delete_button);
 
-    vbox.add(&hbox);
-    scrolled_window.set_property_expand(true);
-    vbox.add(&scrolled_window);
+    vbox.append(&hbox);
+    scrolled_window.set_hexpand(true);
+    scrolled_window.set_vexpand(true);
+    vbox.append(&scrolled_window);
 
-    vbox.set_property_margin(10);
-
-    window.add(&vbox);
+    window.set_child(Some(&vbox));
 
     for i in 0..10 {
         model.append(&RowData::new(&format!("Name {}", i), i * 10));
@@ -331,8 +285,6 @@ mod row_data {
         // This maps between the GObject properties and our internal storage of the
         // corresponding values of the properties.
         impl ObjectImpl for RowData {
-            glib_object_impl!();
-
             fn set_property(&self, _obj: &glib::Object, id: usize, value: &glib::Value) {
                 let prop = &PROPERTIES[id];
 
