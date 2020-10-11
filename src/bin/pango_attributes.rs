@@ -15,7 +15,6 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("Pango text attributes");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(350, 70);
 
     let label = gtk::Label::new(Some("Some text"));
@@ -44,8 +43,7 @@ fn build_ui(application: &gtk::Application) {
 
     label.set_attributes(Some(&attr_list));
 
-    label.set_property_margin(10);
-    window.add(&label);
+    window.set_child(Some(&label));
 
     window.show();
 }
