@@ -16,19 +16,18 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindowBuilder::new()
         .application(application)
         .title("First GTK+ Program")
-        .window_position(gtk::WindowPosition::Center)
         .default_width(350)
         .default_height(70)
         .build();
 
     let button = gtk::LockButtonBuilder::new()
-        .margin(10)
+        .margin_top(10)
         .visible(true)
         .text_lock("Lock")
         .text_unlock("Unlock")
         .build();
 
-    window.add(&button);
+    window.set_child(Some(&button));
 
     window.show();
 }

@@ -9,7 +9,6 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
-use glib::prelude::*;
 use gtk::prelude::*;
 
 use std::env::args;
@@ -100,9 +99,11 @@ fn main() {
 
     // When activated, shuts down the application
     let quit = gio::SimpleAction::new("quit", None);
-    quit.connect_activate(glib::clone!(@weak application => move |_action, _parameter| {
-        application.quit();
-    }));
+    quit.connect_activate(
+        glib::clone!(@weak application => move |_action, _parameter| {
+            application.quit();
+        }),
+    );
     application.set_accels_for_action("app.quit", &["<Primary>Q"]);
     application.add_action(&quit);
 

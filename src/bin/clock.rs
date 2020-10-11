@@ -26,7 +26,7 @@ fn build_ui(application: &gtk::Application) {
     let time = current_time();
     let label = gtk::Label::new(None);
     label.set_text(&time);
-    
+
     window.set_child(Some(&label));
 
     window.show();
