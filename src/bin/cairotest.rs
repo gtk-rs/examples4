@@ -113,6 +113,6 @@ where
 
     window.set_default_size(width, height);
 
-    window.add(&drawing_area);
+    window.set_child(Some(&drawing_area));
     window.show();
 }
