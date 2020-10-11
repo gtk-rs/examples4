@@ -7,11 +7,9 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
-use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::{
     ApplicationWindow, CellRendererText, Label, ListStore, Orientation, TreeView, TreeViewColumn,
-    WindowPosition,
 };
 
 use std::env::args;
@@ -53,7 +51,6 @@ fn build_ui(application: &gtk::Application) {
     let window = ApplicationWindow::new(application);
 
     window.set_title("Simple TreeView example");
-    window.set_position(WindowPosition::Center);
 
     // Creating a vertical layout to place both tree view and label in the window.
     let vertical_layout = gtk::Box::new(Orientation::Vertical, 0);
@@ -67,9 +64,9 @@ fn build_ui(application: &gtk::Application) {
     // Setting the model into the view.
     tree.set_model(Some(&model));
     // Adding the view to the layout.
-    vertical_layout.add(&tree);
+    vertical_layout.append(&tree);
     // Same goes for the label.
-    vertical_layout.add(&label);
+    vertical_layout.append(&label);
 
     // The closure responds to selection changes by connection to "::cursor-changed" signal,
     // that gets emitted when the cursor moves (focus changes).
@@ -96,7 +93,7 @@ fn build_ui(application: &gtk::Application) {
     });
 
     // Adding the layout to the window.
-    window.add(&vertical_layout);
+    window.set_child(Some(&vertical_layout));
 
     window.show();
 }
