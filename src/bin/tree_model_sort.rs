@@ -15,7 +15,6 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("Tree Model Sort Window");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(350, 70);
 
     let store = gtk::TreeStore::new(&[glib::Type::String]);
@@ -29,7 +28,7 @@ fn build_ui(application: &gtk::Application) {
     let sortable_store = gtk::TreeModelSort::new(&store);
 
     // Then we create the `TreeView` from the `TreeModelSort`.
-    let treeview = gtk::TreeView::new_with_model(&sortable_store);
+    let treeview = gtk::TreeView::with_model(&sortable_store);
 
     let column = gtk::TreeViewColumn::new();
     column.set_title("Value");
@@ -54,10 +53,8 @@ fn build_ui(application: &gtk::Application) {
         );
     });
 
-    treeview.set_property_margin(10);
-
     // We finally add the `TreeView` to the window.
-    window.add(&treeview);
+    window.set_child(Some(&treeview));
     window.show();
 }
 
