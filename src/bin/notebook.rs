@@ -5,23 +5,9 @@ extern crate gtk;
 use gio::prelude::*;
 use glib::prelude::*;
 use gtk::prelude::*;
-use gtk::{Orientation, ReliefStyle, Widget};
+use gtk::{Orientation, Widget};
 
 use std::env::args;
-
-// upgrade weak reference or return
-#[macro_export]
-macro_rules! upgrade_weak {
-    ($x:ident, $r:expr) => {{
-        match $x.upgrade() {
-            Some(o) => o,
-            None => return $r,
-        }
-    }};
-    ($x:ident) => {
-        upgrade_weak!($x, ())
-    };
-}
 
 struct Notebook {
     notebook: gtk::Notebook,
@@ -37,28 +23,25 @@ impl Notebook {
     }
 
     fn create_tab(&mut self, title: &str, widget: Widget) -> u32 {
-        let close_image = gtk::Image::new_from_icon_name(Some("window-close"));
+        let close_image = gtk::Image::from_icon_name(Some("window-close"));
         let button = gtk::Button::new();
         let label = gtk::Label::new(Some(title));
         let tab = gtk::Box::new(Orientation::Horizontal, 0);
 
-        button.set_relief(ReliefStyle::None);
         button.set_focus_on_click(false);
-        button.add(&close_image);
+        button.set_child(Some(&close_image));
 
-        tab.add(&label);
-        tab.add(&button);
+        tab.append(&label);
+        tab.append(&button);
 
         let index = self.notebook.append_page(&widget, Some(&tab));
 
-        let notebook_weak = self.notebook.downgrade();
-        button.connect_clicked(move |_| {
-            let notebook = upgrade_weak!(notebook_weak);
+        button.connect_clicked(glib::clone!(@weak self.notebook as notebook => move |_| {
             let index = notebook
                 .page_num(&widget)
                 .expect("Couldn't get page_num from notebook");
             notebook.remove_page(Some(index));
-        });
+        }));
 
         self.tabs.push(tab);
 
@@ -70,7 +53,6 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("Notebook");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(640, 480);
 
     let mut notebook = Notebook::new();
@@ -81,7 +63,7 @@ fn build_ui(application: &gtk::Application) {
         notebook.create_tab(&title, label.upcast());
     }
 
-    window.add(&notebook.notebook);
+    window.set_child(Some(&notebook.notebook));
     window.show();
 }
 
