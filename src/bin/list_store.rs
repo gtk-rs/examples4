@@ -3,11 +3,11 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
-use glib::prelude::*;
 use gtk::prelude::*;
 
 use std::env::args;
 use std::rc::Rc;
+use std::time::Duration;
 
 #[derive(Debug)]
 #[repr(i32)]
@@ -26,37 +26,35 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("List Store");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(280, 250);
 
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 8);
-    vbox.set_property_margin(10);
-    window.add(&vbox);
+    vbox.set_margin_top(10);
+    window.set_child(Some(&vbox));
 
     let label = gtk::Label::new(Some(
         "This is the bug list (note: not based on real data, it would be \
          nice to have a nice ODBC interface to bugzilla or so, though).",
     ));
-    vbox.add(&label);
+    vbox.append(&label);
 
-    let sw = gtk::ScrolledWindow::new(None::<&gtk::Adjustment>, None::<&gtk::Adjustment>);
-    sw.set_shadow_type(gtk::ShadowType::EtchedIn);
+    let sw = gtk::ScrolledWindow::new();
     sw.set_policy(gtk::PolicyType::Never, gtk::PolicyType::Automatic);
-    vbox.add(&sw);
+    vbox.append(&sw);
 
     let model = Rc::new(create_model());
-    let treeview = gtk::TreeView::new_with_model(&*model);
+    let treeview = gtk::TreeView::with_model(&*model);
     treeview.set_vexpand(true);
     treeview.set_search_column(Columns::Description as i32);
 
-    sw.add(&treeview);
+    sw.set_child(Some(&treeview));
 
     add_columns(&model, &treeview);
 
     window.show();
 
     let model = model.clone();
-    glib::timeout_add_local(80, move || spinner_timeout(&model));
+    glib::timeout_add_local(Duration::from_millis(80), move || spinner_timeout(&model));
 }
 
 struct Data {
