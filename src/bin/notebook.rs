@@ -3,7 +3,6 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
-use glib::prelude::*;
 use gtk::prelude::*;
 use gtk::{Orientation, Widget};
 
