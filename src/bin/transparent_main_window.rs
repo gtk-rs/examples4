@@ -22,18 +22,17 @@ fn build_ui(application: &gtk::Application) {
     window.set_opacity(0.4);
 
     let overlay = gtk::Overlay::new();
-    window.add(&overlay);
+    window.set_child(Some(&overlay));
 
     let fixed = Fixed::new();
-    overlay.add(&fixed);
-    let button = Button::new_with_label("Dummy");
+    overlay.set_child(Some(&fixed));
+    let button = Button::with_label("Dummy");
     button.set_size_request(100, 30);
-    fixed.add(&button);
+    fixed.put(&button, 0_f64, 0_f64);
 
     let drawing_area = gtk::DrawingArea::new();
     drawing_area.set_draw_func(Some(Box::new(draw)));
-    drawing_area.set_property_expand(true);
-    overlay.add(&drawing_area);
+    overlay.set_child(Some(&drawing_area));
 
     window.show();
 }
