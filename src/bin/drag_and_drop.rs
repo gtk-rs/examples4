@@ -14,7 +14,7 @@ use std::env::args;
 
 fn build_ui(application: &gtk::Application) {
     // Configure button as drag source for text
-    let button = gtk::Button::new_with_label("Drag here");
+    let button = gtk::Button::with_label("Drag here");
     let targets = gdk::ContentFormats::new(&["STRING", "text/plain"]);
     button.drag_source_set(
         gdk::ModifierType::MODIFIER_MASK,
@@ -37,18 +37,17 @@ fn build_ui(application: &gtk::Application) {
     label.connect_drag_data_received(|w, _, s| {
         w.set_text(&s.get_text().expect("Couldn't get text"));
     });
-    label.set_property_expand(true);
 
     // Stack the button and label horizontally
     let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    hbox.add(&button);
-    hbox.add(&label);
+    hbox.append(&button);
+    hbox.append(&label);
 
     // Finish populating the window and display everything
     let window = gtk::ApplicationWindow::new(application);
     window.set_title("Simple Drag and Drop Example");
     window.set_default_size(200, 100);
-    window.add(&hbox);
+    window.set_child(Some(&hbox));
     window.show();
 }
 

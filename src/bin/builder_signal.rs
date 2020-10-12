@@ -21,24 +21,20 @@ fn build_ui(application: &gtk::Application) {
     let dialog: MessageDialog = builder
         .get_object("messagedialog1")
         .expect("Couldn't get messagedialog1");
+    /* TODO: fix me
+        builder
+            .connect_unsafe("button1_clicked", true, move |d| {
+                Box::new({
+                    let dialog = dialog.clone();
 
-    builder.connect_signals(move |_, handler_name| {
-        // This is the one-time callback to register signals.
-        // Here we map each handler name to its handler.
+                    // Return the signal handler.
 
-        if handler_name == "button1_clicked" {
-            let dialog = dialog.clone();
-
-            // Return the signal handler.
-            Box::new(move |_| {
-                dialog.show();
-                None
+                    dialog.show();
+                    None
+                })
             })
-        } else {
-            panic!("Unknown handler name {}", handler_name)
-        }
-    });
-
+            .unwrap();
+    }*/
     window.show();
 }
 
