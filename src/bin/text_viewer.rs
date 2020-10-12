@@ -1,4 +1,4 @@
-//! # Toolbar, Scrollable Text View and File Chooser
+//! # Scrollable Text View and File Chooser
 //!
 //! A simple text file viewer
 
@@ -12,23 +12,9 @@ use std::io::prelude::*;
 use std::io::BufReader;
 
 use gio::prelude::*;
-use glib::prelude::*;
+use glib::clone;
 use gtk::prelude::*;
 use gtk::Builder;
-
-// upgrade weak reference or return
-#[macro_export]
-macro_rules! upgrade_weak {
-    ($x:ident, $r:expr) => {{
-        match $x.upgrade() {
-            Some(o) => o,
-            None => return $r,
-        }
-    }};
-    ($x:ident) => {
-        upgrade_weak!($x, ())
-    };
-}
 
 pub fn build_ui(application: &gtk::Application) {
     let glade_src = include_str!("text_viewer.glade");
@@ -39,16 +25,14 @@ pub fn build_ui(application: &gtk::Application) {
 
     let window: gtk::ApplicationWindow = builder.get_object("window").expect("Couldn't get window");
     window.set_application(Some(application));
-    let open_button: gtk::ToolButton = builder
+    let open_button: gtk::Button = builder
         .get_object("open_button")
         .expect("Couldn't get builder");
     let text_view: gtk::TextView = builder
         .get_object("text_view")
         .expect("Couldn't get text_view");
 
-    let window_weak = window.downgrade();
-    open_button.connect_clicked(move |_| {
-        let window = upgrade_weak!(window_weak);
+    open_button.connect_clicked(clone!(@weak window, @weak text_view => move |_| {
 
         // TODO move this to a impl?
         let file_chooser = gtk::FileChooserDialog::new(
@@ -61,22 +45,30 @@ pub fn build_ui(application: &gtk::Application) {
             ("Open", gtk::ResponseType::Ok),
             ("Cancel", gtk::ResponseType::Cancel),
         ]);
-        if file_chooser.run() == gtk::ResponseType::Ok {
-            let filename = file_chooser.get_filename().expect("Couldn't get filename");
-            let file = File::open(&filename).expect("Couldn't open file");
 
-            let mut reader = BufReader::new(file);
-            let mut contents = String::new();
-            let _ = reader.read_to_string(&mut contents);
+        file_chooser.connect_response(clone!(@weak text_view => move |dialog, respnonse| {
+            if respnonse == gtk::ResponseType::Ok {
+                let filename = dialog
+                    .get_file()
+                    .expect("Couldn't get file")
+                    .get_path()
+                    .unwrap();
+                let file = File::open(&filename).expect("Couldn't open file");
 
-            text_view
-                .get_buffer()
-                .expect("Couldn't get window")
-                .set_text(&contents);
-        }
+                let mut reader = BufReader::new(file);
+                let mut contents = String::new();
+                let _ = reader.read_to_string(&mut contents);
 
-        file_chooser.destroy();
-    });
+                text_view
+                    .get_buffer()
+                    .expect("Couldn't get window")
+                    .set_text(&contents);
+            }
+
+            dialog.close();
+        }));
+        file_chooser.show();
+    }));
 
     window.show();
 }

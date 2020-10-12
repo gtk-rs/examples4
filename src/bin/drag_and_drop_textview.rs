@@ -12,7 +12,6 @@ use std::env::args;
 use gdk::DragAction;
 use gio::prelude::*;
 use gtk::prelude::*;
-use gtk::DestDefaults;
 use url::Url;
 
 fn build_ui(application: &gtk::Application) {
@@ -26,10 +25,11 @@ fn build_ui(application: &gtk::Application) {
     let text_view = gtk::TextView::new();
     text_view.set_wrap_mode(gtk::WrapMode::Word);
     text_view.set_cursor_visible(false);
-    let scrolled_text_view = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
+    let scrolled_text_view = gtk::ScrolledWindow::new();
     scrolled_text_view.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
-    scrolled_text_view.add(&text_view);
-    scrolled_text_view.set_property_expand(true);
+    scrolled_text_view.set_child(Some(&text_view));
+    scrolled_text_view.set_vexpand(true);
+    scrolled_text_view.set_hexpand(true);
 
     // Configure the text view to accept URI lists from other applications. This allows
     // dragging files & folders from a file browser program onto the textview.
@@ -58,11 +58,11 @@ fn build_ui(application: &gtk::Application) {
 
     // Pack widgets vertically.
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    vbox.add(&label);
-    vbox.add(&scrolled_text_view);
+    vbox.append(&label);
+    vbox.append(&scrolled_text_view);
 
     // Create a new window
-    window.add(&vbox);
+    window.set_child(Some(&vbox));
     window.show();
 }
 

@@ -11,7 +11,6 @@
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAboutDialog" id="dialog">
-    <property name="type_hint">dialog</property>
     <property name="program_name">Glade</property>
     <property name="website">http://gtk-rs.org</property>
     <property name="authors">James T. Kirk
@@ -37,11 +36,8 @@ Leonard McCoy</property>
   </object>
   <object class="GtkApplicationWindow" id="window">
     <property name="title" translatable="yes">Yeah a beautiful window with gtk !</property>
-    <property name="window_position">center</property>
     <child>
       <object class="GtkFrame" id="frame">
-        <property name="shadow_type">none</property>
-        <property name="margin">10</property>
         <child>
           <object class="GtkBox" id="_box">
             <property name="orientation">vertical</property>
@@ -53,37 +49,6 @@ Leonard McCoy</property>
             <child>
               <object class="GtkInfoBar" id="info_bar">
                 <property name="show_close_button">1</property>
-                <child internal-child="action_area">
-                  <object class="GtkBox" id="infobar-action_area1">
-                    <property name="spacing">6</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                </child>
-                <child internal-child="content_area">
-                  <object class="GtkBox" id="infobar-content_area1">
-                    <property name="spacing">16</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
               </object>
             </child>
             <child>
@@ -111,7 +76,6 @@ Leonard McCoy</property>
                     <property name="label" translatable="yes">rust-lang.org</property>
                     <property name="can_focus">1</property>
                     <property name="receives_default">1</property>
-                    <property name="relief">none</property>
                     <property name="uri">https://www.rust-lang.org/</property>
                   </object>
                 </child>
@@ -207,7 +171,6 @@ Leonard McCoy</property>
                   <object class="GtkVolumeButton" id="volume_button">
                     <property name="can_focus">1</property>
                     <property name="receives_default">1</property>
-                    <property name="relief">none</property>
                     <property name="focus_on_click">0</property>
                     <property name="icons">audio-volume-muted
 audio-volume-high
@@ -218,7 +181,6 @@ audio-volume-medium</property>
                         <property name="label" translatable="yes">+</property>
                         <property name="can_focus">1</property>
                         <property name="receives_default">1</property>
-                        <property name="relief">none</property>
                       </object>
                     </child>
                     <child internal-child="minus_button">
@@ -226,7 +188,6 @@ audio-volume-medium</property>
                         <property name="label" translatable="yes">-</property>
                         <property name="can_focus">1</property>
                         <property name="receives_default">1</property>
-                        <property name="relief">none</property>
                       </object>
                     </child>
                   </object>

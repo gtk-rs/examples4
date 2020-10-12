@@ -44,12 +44,11 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("CSS");
-    window.set_position(gtk::WindowPosition::Center);
 
     // The container container.
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
-    let label = gtk::Button::new_with_label("hover me!");
+    let label = gtk::Button::with_label("hover me!");
     // We need to name it in order to be able to use its name as a CSS label to
     // apply CSS on it.
     gtk::prelude::WidgetExtManual::set_name(&label, "label1");
@@ -65,11 +64,11 @@ fn build_ui(application: &gtk::Application) {
     combo.append_text("option 3");
     combo.set_active(Some(0));
 
-    vbox.add(&label);
-    vbox.add(&entry);
-    vbox.add(&combo);
+    vbox.append(&label);
+    vbox.append(&entry);
+    vbox.append(&combo);
     // Then we add the container inside our window.
-    window.add(&vbox);
+    window.set_child(Some(&vbox));
 
     application.connect_activate(move |_| {
         window.show();

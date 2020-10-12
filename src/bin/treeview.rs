@@ -9,32 +9,14 @@ extern crate gtk;
 
 use gdk_pixbuf::Pixbuf;
 use gio::prelude::*;
-use glib::prelude::*;
+use glib::clone;
 use gtk::prelude::*;
 use gtk::{
     ApplicationWindow, ButtonsType, CellRendererPixbuf, CellRendererText, DialogFlags,
-    MessageDialog, MessageType, Orientation, TreeStore, TreeView, TreeViewColumn, WindowPosition,
+    MessageDialog, MessageType, Orientation, TreeStore, TreeView, TreeViewColumn,
 };
 
 use std::env::args;
-
-// make moving clones into closures more convenient
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
 
 fn append_text_column(tree: &TreeView) {
     let column = TreeViewColumn::new();
@@ -49,7 +31,6 @@ fn build_ui(application: &gtk::Application) {
     let window = ApplicationWindow::new(application);
 
     window.set_title("TreeView Sample");
-    window.set_position(WindowPosition::Center);
 
     // left pane
     let left_tree = TreeView::new();
@@ -85,7 +66,7 @@ fn build_ui(application: &gtk::Application) {
     let renderer2 = CellRendererText::new();
     col.pack_start(&renderer2, true);
     col.add_attribute(&renderer2, "text", 1);
-    let image = Pixbuf::new_from_file("./resources/eye.png")
+    let image = Pixbuf::from_file("./resources/eye.png")
         .or_else(|err| {
             let mut msg = err.to_string();
             if err.kind() == Some(glib::FileError::Noent) {
@@ -95,13 +76,14 @@ fn build_ui(application: &gtk::Application) {
                 );
             }
 
-            glib::idle_add_local(clone!(window => move || {
-                let dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL,
-                    MessageType::Error, ButtonsType::Ok, &msg);
-                dialog.run();
-                dialog.destroy();
-                Continue(false)
-            }));
+            glib::idle_add_local(
+                clone!(@weak window => @default-return Continue(false) , move || {
+                    let dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL,
+                        MessageType::Error, ButtonsType::Ok, &msg);
+                    dialog.show();
+                    Continue(false)
+                }),
+            );
 
             Err(())
         })
@@ -123,7 +105,7 @@ fn build_ui(application: &gtk::Application) {
     // selection and path manipulation
 
     let left_selection = left_tree.get_selection();
-    left_selection.connect_changed(clone!(right_tree => move |tree_selection| {
+    left_selection.connect_changed(clone!(@weak right_tree => move |tree_selection| {
         let (left_model, iter) = tree_selection.get_selected().expect("Couldn't get selected");
         let mut path = left_model.get_path(&iter).expect("Couldn't get path");
         // get the top-level element path
@@ -138,10 +120,10 @@ fn build_ui(application: &gtk::Application) {
     let split_pane = gtk::Box::new(Orientation::Horizontal, 10);
 
     split_pane.set_size_request(-1, -1);
-    split_pane.add(&left_tree);
-    split_pane.add(&right_tree);
+    split_pane.append(&left_tree);
+    split_pane.append(&right_tree);
 
-    window.add(&split_pane);
+    window.set_child(Some(&split_pane));
     window.show();
 }
 

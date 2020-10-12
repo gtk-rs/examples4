@@ -35,11 +35,13 @@ git = "https://github.com/gtk-rs/gdk-pixbuf"
 
 [dependencies.gdk]
 package = "gdk4"
-git = "https://github.com/gtk-rs/gdk4"
+git = "https://github.com/bilelmoussaoui/gdk4"
+branch = "bilelmoussaoui/update"
 
 [dependencies.gtk]
 package = "gtk4"
-git = "https://github.com/gtk-rs/gtk4"
+git = "https://github.com/bilelmoussaoui/gtk4"
+branch = "bilelmoussaoui/update"
 
 [[bin]]
 name = "accessibility"
@@ -98,9 +100,6 @@ name = "gtktest"
 [[bin]]
 name = "listbox_model"
 required-features = ["gio/v2_44"]
-
-[[bin]]
-name = "menu_bar"
 
 [[bin]]
 name = "menu_bar_system"

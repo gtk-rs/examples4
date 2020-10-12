@@ -12,30 +12,12 @@ use std::time::Duration;
 
 use cairo::{Context, Format, ImageSurface};
 use gio::prelude::*;
-use glib::prelude::*;
+use glib::clone;
 use gtk::prelude::*;
 use gtk::{ApplicationWindow, DrawingArea};
 
 const WIDTH: i32 = 200;
 const HEIGHT: i32 = 200;
-
-// make moving clones into closures more convenient
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-            move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
 
 // Our custom image type. This stores a heap allocated byte array for the pixels for each of our
 // images, can be sent safely between threads and can be temporarily converted to a Cairo image
@@ -140,7 +122,7 @@ impl Image {
 fn build_ui(application: &gtk::Application) {
     let window = ApplicationWindow::new(application);
     let area = DrawingArea::new();
-    window.add(&area);
+    window.set_child(Some(&area));
 
     area.set_size_request(WIDTH * 2, HEIGHT * 2);
 
@@ -189,7 +171,7 @@ fn build_ui(application: &gtk::Application) {
         let delay = Duration::from_millis((100 << thread_num) - 5);
 
         // Spawn the worker thread
-        thread::spawn(clone!(ready_tx => move || {
+        thread::spawn(clone!(@strong ready_tx => move || {
             let mut n = 0;
             for mut image in rx.iter() {
                 n = (n + 1) % 0x10000;
@@ -213,15 +195,17 @@ fn build_ui(application: &gtk::Application) {
 
     // Whenever the drawing area has to be redrawn, render the latest images in the correct
     // locations
-    area.set_draw_func(Some(Box::new(clone!(workspace => move |_, cr, _, _| {
-        let (ref images, ref origins, _) = *workspace;
+    area.set_draw_func(Some(Box::new(
+        clone!(@strong workspace => move |_, cr, _, _| {
+            let (ref images, ref origins, _) = *workspace;
 
-        for (image, origin) in images.iter().zip(origins.iter()) {
-            image.borrow_mut().with_surface(|surface| {
-                draw_image_if_dirty(&cr, surface, *origin, (WIDTH, HEIGHT));
-            });
-        }
-    }))));
+            for (image, origin) in images.iter().zip(origins.iter()) {
+                image.borrow_mut().with_surface(|surface| {
+                    draw_image_if_dirty(&cr, surface, *origin, (WIDTH, HEIGHT));
+                });
+            }
+        }),
+    )));
 
     ready_rx.attach(None, move |(thread_num, image)| {
         let (ref images, _, ref workers) = *workspace;

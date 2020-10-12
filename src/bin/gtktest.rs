@@ -6,54 +6,19 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
-use glib::prelude::*;
+use glib::clone;
 use glib::signal::Inhibit;
 use gtk::prelude::*;
 use gtk::{
     AboutDialog, AppChooserDialog, ApplicationWindow, Builder, Button, Dialog, Entry,
-    FileChooserAction, FileChooserDialog, FontChooserDialog, ResponseType, Scale, SpinButton,
-    Spinner, Switch, Window,
+    FileChooserAction, FileChooserDialog, FontChooserDialog, ResponseType, SpinButton, Spinner,
+    Switch, Window,
 };
 
 use std::env::args;
 
-// make moving clones into closures more convenient
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-                move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-                move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
-
-// upgrade weak reference or return
-#[macro_export]
-macro_rules! upgrade_weak {
-    ($x:ident, $r:expr) => {{
-        match $x.upgrade() {
-            Some(o) => o,
-            None => return $r,
-        }
-    }};
-    ($x:ident) => {
-        upgrade_weak!($x, ())
-    };
-}
-
 fn about_clicked(button: &Button, dialog: &AboutDialog) {
-    if let Some(window) = button
-        .get_toplevel()
-        .and_then(|w| w.downcast::<Window>().ok())
-    {
+    if let Some(window) = button.get_root().and_then(|w| w.downcast::<Window>().ok()) {
         dialog.set_transient_for(Some(&window));
     }
 
@@ -63,8 +28,6 @@ fn about_clicked(button: &Button, dialog: &AboutDialog) {
 
     // Since we only have once instance of this object with Glade, we only show/hide it.
     dialog.show();
-    dialog.run();
-    dialog.hide();
 }
 
 fn build_ui(application: &gtk::Application) {
@@ -74,16 +37,10 @@ fn build_ui(application: &gtk::Application) {
         gtk::get_minor_version()
     );
     let glade_src = include_str!("gtktest.glade");
-    let builder = Builder::new_from_string(glade_src);
+    let builder = Builder::from_string(glade_src);
 
     let spinner: Spinner = builder.get_object("spinner").expect("Couldn't get spinner");
     spinner.start();
-
-    let scale: Scale = builder.get_object("scale").expect("Couldn't get scale");
-    scale.connect_format_value(|scale, value| {
-        let digits = scale.get_digits() as usize;
-        format!("<{:.*}>", digits, value)
-    });
 
     let spin_button: SpinButton = builder
         .get_object("spin_button")
@@ -110,47 +67,38 @@ fn build_ui(application: &gtk::Application) {
     let window: ApplicationWindow = builder.get_object("window").expect("Couldn't get window");
     window.set_application(Some(application));
 
-    let window_weak = window.downgrade();
-
     let button: Button = builder.get_object("button").expect("Couldn't get button");
     let entry: Entry = builder.get_object("entry").expect("Couldn't get entry");
 
-    let entry_weak = entry.downgrade();
-    button.connect_clicked(clone!(window_weak, entry_weak => move |_| {
-        let window = upgrade_weak!(window_weak);
-        let entry = upgrade_weak!(entry_weak);
-
+    button.connect_clicked(clone!(@weak window, @weak entry => move |_| {
         let dialog = Dialog::new_with_buttons(Some("Hello!"),
                                               Some(&window),
                                               gtk::DialogFlags::MODAL,
                                               &[("No", ResponseType::No),
                                                 ("Yes", ResponseType::Yes),
                                                 ("Custom", ResponseType::Other(0))]);
+        dialog.connect_response(|dialog, response| {
+            // entry.set_text(&format!("Clicked {}", ret));
 
-        let ret = dialog.run();
-
-        dialog.destroy();
-
-        entry.set_text(&format!("Clicked {}", ret));
+            dialog.close();
+        });
+        dialog.show();
     }));
 
     let button_font: Button = builder
         .get_object("button_font")
         .expect("Couldn't get button_font");
-    button_font.connect_clicked(clone!(window_weak => move |_| {
-            let window = upgrade_weak!(window_weak);
+    button_font.connect_clicked(clone!(@weak window => move |_| {
 
         let dialog = FontChooserDialog::new(Some("Font chooser test"), Some(&window));
 
-        dialog.run();
-        dialog.destroy();
+        dialog.show();
     }));
 
     let file_button: Button = builder
         .get_object("file_button")
         .expect("Couldn't get file_button");
-    file_button.connect_clicked(clone!(window_weak => move |_| {
-        let window = upgrade_weak!(window_weak);
+    file_button.connect_clicked(clone!(@weak window => move |_| {
 
         //entry.set_text("Clicked!");
         let dialog = FileChooserDialog::new(Some("Choose a file"), Some(&window),
@@ -161,32 +109,31 @@ fn build_ui(application: &gtk::Application) {
         ]);
 
         dialog.set_select_multiple(true);
-        dialog.run();
-        let files = dialog.get_filenames();
-        dialog.destroy();
+        dialog.connect_response(|d, response| {
+            if response == gtk::ResponseType::Ok {
+                let files = d.get_files();
+                println!("Files: {:?}", files);
+            }
+        });
 
-        println!("Files: {:?}", files);
+        dialog.show();
     }));
 
     let app_button: Button = builder
         .get_object("app_button")
         .expect("Couldn't get app_button");
-    app_button.connect_clicked(clone!(window_weak => move |_| {
-        let window = upgrade_weak!(window_weak);
+    app_button.connect_clicked(clone!(@weak window => move |_| {
 
         //entry.set_text("Clicked!");
         let dialog = AppChooserDialog::new_for_content_type(Some(&window),
                                                             gtk::DialogFlags::MODAL,
                                                             "sh");
 
-        dialog.run();
-        dialog.destroy();
+        dialog.show();
     }));
 
     let switch: Switch = builder.get_object("switch").expect("Couldn't get switch");
-    switch.connect_property_active_notify(clone!(entry_weak => move |switch| {
-        let entry = upgrade_weak!(entry_weak);
-
+    switch.connect_property_active_notify(clone!(@weak entry => move |switch| {
         if switch.get_active() {
             entry.set_text("Switch On");
         } else {
@@ -203,18 +150,19 @@ fn build_ui(application: &gtk::Application) {
     let event = gtk::EventControllerKey::new();
     window.add_controller(&event);
     event.set_propagation_phase(gtk::PropagationPhase::Capture);
-    event.connect_key_pressed(clone!(entry_weak => move |_, keyval, _, keystate| {
-        let entry = upgrade_weak!(entry_weak, Inhibit(false));
+    event.connect_key_pressed(
+        clone!(@weak entry => @default-return Inhibit(false), move |_, keyval, _, keystate| {
 
-        println!("key pressed: {} / {:?}", keyval, keystate);
-        println!("text: {}", entry.get_text().expect("Couldn't get text from entry"));
+            println!("key pressed: {} / {:?}", keyval, keystate);
+            println!("text: {}", entry.get_text().expect("Couldn't get text from entry"));
 
-        if keystate.intersects(gdk::ModifierType::CONTROL_MASK) {
-            println!("You pressed Ctrl!");
-        }
+            if keystate.intersects(gdk::ModifierType::CONTROL_MASK) {
+                println!("You pressed Ctrl!");
+            }
 
-        Inhibit(false)
-    }));
+            Inhibit(false)
+        }),
+    );
 
     window.show();
 }

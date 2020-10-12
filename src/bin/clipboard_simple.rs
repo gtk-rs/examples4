@@ -39,24 +39,24 @@ fn build_ui(application: &gtk::Application) {
     let grid = gtk::Grid::new();
     grid.set_row_homogeneous(true);
     grid.set_column_homogeneous(true);
-    let button_a1 = gtk::ToggleButton::new_with_label("A1");
+    let button_a1 = gtk::ToggleButton::with_label("A1");
     grid.attach(&button_a1, 0, 0, 1, 1);
-    let button_a2 = gtk::ToggleButton::new_with_label("A2");
+    let button_a2 = gtk::ToggleButton::with_label("A2");
     grid.attach(&button_a2, 1, 0, 1, 1);
-    let button_b1 = gtk::ToggleButton::new_with_label("B1");
+    let button_b1 = gtk::ToggleButton::with_label("B1");
     grid.attach(&button_b1, 0, 1, 1, 1);
-    let button_b2 = gtk::ToggleButton::new_with_label("B2");
+    let button_b2 = gtk::ToggleButton::with_label("B2");
     grid.attach(&button_b2, 1, 1, 1, 1);
 
     // Add in the action buttons
-    let copy_button = gtk::Button::new_with_mnemonic("_Copy");
-    let paste_button = gtk::Button::new_with_mnemonic("_Paste");
+    let copy_button = gtk::Button::with_mnemonic("_Copy");
+    let paste_button = gtk::Button::with_mnemonic("_Paste");
     let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     copy_button.set_valign(gtk::Align::Center);
     paste_button.set_valign(gtk::Align::Center);
     button_box.set_halign(gtk::Align::End);
-    button_box.add(&copy_button);
-    button_box.add(&paste_button);
+    button_box.append(&copy_button);
+    button_box.append(&paste_button);
 
     // Pack widgets into the window and display everything
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -66,13 +66,13 @@ fn build_ui(application: &gtk::Application) {
          open a second instance of this example to try \
          pasting the copied data.",
     ));
-    label.set_property_expand(true);
-    grid.set_property_expand(true);
-    button_box.set_property_expand(true);
-    vbox.add(&label);
-    vbox.add(&grid);
-    vbox.add(&button_box);
-    window.add(&vbox);
+    label.set_hexpand(true);
+    grid.set_hexpand(true);
+    button_box.set_hexpand(true);
+    vbox.append(&label);
+    vbox.append(&grid);
+    vbox.append(&button_box);
+    window.set_child(Some(&vbox));
 
     window.show();
 
@@ -123,7 +123,7 @@ fn build_ui(application: &gtk::Application) {
             .expect("No display")
             .get_clipboard();
         clipboard.read_text_async(None::<&gio::Cancellable>, |t| {
-            if let Ok(t) = t {
+            if let Some(Some(t)) = t.ok() {
                 if t.len() >= 4 {
                     GLOBAL.with(|global| {
                         if let Some(ref ui) = *global.borrow() {

@@ -8,7 +8,6 @@ extern crate gio;
 extern crate glib;
 extern crate gtk;
 
-use atk::prelude::*;
 use gio::prelude::*;
 use gtk::prelude::*;
 
@@ -18,29 +17,18 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("Accessibility");
-    window.set_position(gtk::WindowPosition::Center);
 
-    let button = gtk::Button::new_with_label("Click me!");
+    let button = gtk::Button::with_label("Click me!");
     let label = gtk::Label::new(Some("0"));
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
-    if let (Some(button_obj), Some(label_obj)) = (button.get_accessible(), label.get_accessible()) {
-        // We set the description
-        button_obj.set_description("Button to increase label value");
+    button.set_property_accessible_role(gtk::AccessibleRole::Button);
+    label.set_property_accessible_role(gtk::AccessibleRole::Label);
 
-        // Then we setup the relation saying that the label is linked to the button.
-        let relation_set = label_obj
-            .ref_relation_set()
-            .expect("Failed to get relation for label");
-        let relation = atk::Relation::new(&[button_obj], atk::RelationType::LabelFor);
+    vbox.append(&button);
+    vbox.append(&label);
 
-        relation_set.add(&relation);
-    }
-
-    vbox.add(&button);
-    vbox.add(&label);
-
-    window.add(&vbox);
+    window.set_child(Some(&vbox));
 
     button.connect_clicked(move |_| {
         let value = label

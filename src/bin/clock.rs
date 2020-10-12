@@ -21,15 +21,13 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("First GTK+ Clock");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(260, 40);
 
     let time = current_time();
     let label = gtk::Label::new(None);
     label.set_text(&time);
-    label.set_property_margin(10);
 
-    window.add(&label);
+    window.set_child(Some(&label));
 
     window.show();
 

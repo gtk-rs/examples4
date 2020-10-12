@@ -9,21 +9,9 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
-use glib::prelude::*;
 use gtk::prelude::*;
 
 use std::env::args;
-
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move |$($p:tt),*| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-                move |$(clone!(@param $p),)*| $body
-        }
-    );
-}
 
 struct Data {
     description: String,
@@ -59,7 +47,6 @@ fn build_ui(application: &gtk::Application) {
     // create the main window
     let window = gtk::ApplicationWindow::new(application);
     window.set_title("Entry with autocompletion");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(840, 480);
 
     // Create a title label
@@ -86,12 +73,15 @@ fn build_ui(application: &gtk::Application) {
     input_field.set_completion(Some(&completion_countries));
 
     let row = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    row.add(&win_title);
+    row.append(&win_title);
     input_field.set_margin_top(10);
-    row.add(&input_field);
+    row.append(&input_field);
 
-    row.set_property_margin(5);
-    window.add(&row);
+    row.set_margin_top(5);
+    row.set_margin_bottom(5);
+    row.set_margin_end(5);
+    row.set_margin_start(5);
+    window.set_child(Some(&row));
 
     // show everything
     window.show();
@@ -109,9 +99,11 @@ fn main() {
 
     // When activated, shuts down the application
     let quit = gio::SimpleAction::new("quit", None);
-    quit.connect_activate(clone!(application => move |_action, _parameter| {
-        application.quit();
-    }));
+    quit.connect_activate(
+        glib::clone!(@weak application => move |_action, _parameter| {
+            application.quit();
+        }),
+    );
     application.set_accels_for_action("app.quit", &["<Primary>Q"]);
     application.add_action(&quit);
 

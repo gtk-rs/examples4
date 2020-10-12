@@ -5,6 +5,7 @@ extern crate glib;
 extern crate gtk;
 
 use gio::prelude::*;
+use glib::clone;
 use gtk::prelude::*;
 
 use glib::signal::Inhibit;
@@ -13,20 +14,6 @@ use std::env::args;
 use std::rc::Rc;
 use std::thread;
 use std::time::Duration;
-
-// upgrade weak reference or return
-#[macro_export]
-macro_rules! upgrade_weak {
-    ($x:ident, $r:expr) => {{
-        match $x.upgrade() {
-            Some(o) => o,
-            None => return $r,
-        }
-    }};
-    ($x:ident) => {
-        upgrade_weak!($x, ())
-    };
-}
 
 pub fn main() {
     glib::set_program_name(Some("Progress Tracker"));
@@ -71,10 +58,8 @@ impl Application {
     }
 
     fn connect_progress(&self) {
-        let widgets = Rc::downgrade(&self.widgets);
         let active = Rc::new(Cell::new(false));
-        self.widgets.main_view.button.connect_clicked(move |_| {
-            let widgets = upgrade_weak!(widgets);
+        self.widgets.main_view.button.connect_clicked(clone!(@weak self.widgets as widgets => move |_| {
             if active.get() {
                 return;
             }
@@ -104,14 +89,13 @@ impl Application {
                             .view_stack
                             .set_visible_child(&widgets.complete_view.container);
 
-                        let widgets = widgets.clone();
-                        glib::timeout_add_local(1500, move || {
+                        glib::timeout_add_local(Duration::from_millis(1500), clone!(@weak widgets => @default-return glib::Continue(false), move || {
                             widgets.main_view.progress.set_fraction(0.0);
                             widgets
                                 .view_stack
                                 .set_visible_child(&widgets.main_view.container);
                             glib::Continue(false)
-                        });
+                        }));
                     }
 
                     glib::Continue(true)
@@ -121,7 +105,7 @@ impl Application {
                     glib::Continue(false)
                 }
             });
-        });
+        }));
     }
 }
 
@@ -139,19 +123,17 @@ impl Widgets {
         let main_view = MainView::new();
 
         let view_stack = gtk::Stack::new();
-        view_stack.set_property_margin(6);
         view_stack.set_vexpand(true);
         view_stack.set_hexpand(true);
-        view_stack.add(&main_view.container);
-        view_stack.add(&complete_view.container);
+        view_stack.add_named(&main_view.container, "main");
+        view_stack.add_named(&complete_view.container, "complete");
 
         let header = Header::new();
 
         let window = gtk::ApplicationWindow::new(application);
         window.set_icon_name(Some("package-x-generic"));
-        window.set_property_window_position(gtk::WindowPosition::Center);
         window.set_titlebar(Some(&header.container));
-        window.add(&view_stack);
+        window.set_child(Some(&view_stack));
         window.show();
         window.set_default_size(500, 250);
         window.connect_close_request(move |window| {
@@ -176,7 +158,7 @@ pub struct Header {
 impl Header {
     pub fn new() -> Self {
         let container = gtk::HeaderBar::new();
-        container.set_title(Some("Progress Tracker"));
+        container.set_title_widget(Some(&gtk::Label::new(Some("Progress Tracker"))));
         container.set_show_title_buttons(true);
 
         Header { container }
@@ -199,7 +181,7 @@ impl CompleteView {
         let container = gtk::Grid::new();
         container.set_vexpand(true);
         container.set_hexpand(true);
-        container.add(&label);
+        container.attach(&label, 0, 0, 1, 1);
 
         CompleteView { container }
     }
@@ -226,7 +208,6 @@ impl MainView {
         container.attach(&progress, 0, 0, 1, 1);
         container.attach(&button, 0, 1, 1, 1);
         container.set_row_spacing(12);
-        container.set_property_margin(6);
         container.set_vexpand(true);
         container.set_hexpand(true);
 

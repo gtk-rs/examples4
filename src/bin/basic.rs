@@ -16,13 +16,17 @@ fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
 
     window.set_title("First GTK+ Program");
-    window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(350, 70);
 
-    let button = gtk::Button::new_with_label("Click me!");
-    button.set_property_margin(10);
+    let button = gtk::ButtonBuilder::default()
+        .label("Click me!")
+        .margin_bottom(10)
+        .margin_start(10)
+        .margin_end(10)
+        .margin_top(10)
+        .build();
 
-    window.add(&button);
+    window.set_child(Some(&button));
     window.show();
 }
 
@@ -30,7 +34,6 @@ fn main() {
     let application =
         gtk::Application::new(Some("com.github.gtk-rs.examples.basic"), Default::default())
             .expect("Initialization failed...");
-
     application.connect_activate(|app| {
         build_ui(app);
     });
